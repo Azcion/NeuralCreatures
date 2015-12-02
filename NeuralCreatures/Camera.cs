@@ -58,7 +58,7 @@ namespace NeuralCreatures {
 		#region Constructor
 
 		public Camera (Viewport viewport) {
-			_zoom = .3f;
+			_zoom = .2f;
 			_scroll = 1;
 			_rotation = 0f;
 			_pos = new Vector2(1600 / 2, 900 / 2);
@@ -99,19 +99,19 @@ namespace NeuralCreatures {
 
 			// Check zoom
 			if (_mouseState.ScrollWheelValue != _scroll) {
-				_zoom += _mouseState.ScrollWheelValue > _scroll ? .1f : -.1f;
+				_zoom += _mouseState.ScrollWheelValue > _scroll ? .01f : -.01f;
 				_scroll = _mouseState.ScrollWheelValue;
 			}
 
 			foreach (Keys key in _keyboardState.GetPressedKeys()) {
 				switch (key) {
 					// Rotation
-					case Keys.A: _rotation -= .01f; break;
+					case Keys.Q: _rotation -= .01f; break;
 					case Keys.E: _rotation += .01f; break;
 					// Movement
-					case Keys.Q: _pos.X += 4f; break;
+					case Keys.A: _pos.X += 4f; break;
 					case Keys.D: _pos.X -= 4f; break;
-					case Keys.Z: _pos.Y += 4f; break;
+					case Keys.W: _pos.Y += 4f; break;
 					case Keys.S: _pos.Y -= 4f; break;
 				}
 			}
