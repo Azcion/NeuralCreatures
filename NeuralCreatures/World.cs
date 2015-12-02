@@ -18,6 +18,7 @@ namespace NeuralCreatures {
 		public int Ticks;
 		public GeneticAlgorithm GA;
 		public int Deaths;
+		public int TotalDeaths;
 		public bool DoDraw;
 
 		public int CreatureCount = 100;
@@ -58,8 +59,9 @@ namespace NeuralCreatures {
 			}
 
 			Camera = new Camera(new Viewport(0, 0, 1600, 900));
-			GA = new GeneticAlgorithm(60, 1);
+			GA = new GeneticAlgorithm(25, 1);
 			Deaths = 0;
+			TotalDeaths = 0;
 			graphValue = new double[32000];
 			DoDraw = true;
 		}
@@ -74,9 +76,11 @@ namespace NeuralCreatures {
 				Deaths += c.Life <= 0 ? 1 : 0;
 			}
 
+			TotalDeaths += Deaths;
+
 			++Ticks;
 
-			if (Ticks >= 10000 ||Deaths == Creatures.Count) {
+			if (Ticks >= 1000 || Deaths == Creatures.Count) {
 				Ticks = 0;
 				graphValue[GA.Generation] = GA.Evolve(Creatures, Bounds);
 			}
@@ -131,7 +135,7 @@ namespace NeuralCreatures {
 
 			batch.DrawString(Font, "Generation: " + GA.Generation, new Vector2(10, 10), Color.Black);
 			batch.DrawString(Font, "Tick:       " + Ticks, new Vector2(10, 30), Color.Black);
-			batch.DrawString(Font, "Deaths:     " + Deaths, new Vector2(10, 50), Color.Black);
+			batch.DrawString(Font, "Deaths:     " + TotalDeaths, new Vector2(10, 50), Color.Black);
 			batch.DrawString(Font, "Elitism:    " + GA.ElitismChance + "%", new Vector2(10, 70), Color.Black);
 			batch.DrawString(Font, "Crossover:  " + GA.CrossOverChance + "%", new Vector2(10, 90), Color.Black);
 			batch.DrawString(Font, "Mutation:   " + GA.MutationChance + "%", new Vector2(10, 110), Color.Black);
@@ -160,7 +164,7 @@ namespace NeuralCreatures {
 								   new Vector2(2, (float) (900 - graphValue[0] * scale)),
 								   Color.Black, TxPoint, 1);
 
-			for (int i = 0; i < GA.Generation; ++i) {
+			for (int i = 1; i < GA.Generation; ++i) {
 				Shapes.DrawLine(batch, new Vector2(i * 2, (float) (900 - graphValue[i - 1] * scale)),
 									   new Vector2(i * 2 + 2, (float) (900 - graphValue[i] * scale)),
 									   Color.Black, TxPoint, 1);

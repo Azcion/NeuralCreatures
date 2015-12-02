@@ -44,8 +44,11 @@ namespace NeuralCreatures {
 			AverageFitness = 0;
 
 			foreach (Creature c in creatures) {
+				++c.Age;
 				AverageFitness += c.Fitness;
-				HighestFitness = c.Fitness > HighestFitness ? c.Fitness : HighestFitness;
+				if (c.Fitness > HighestFitness) {
+					HighestFitness = c.Fitness;
+				}
 			}
 
 			AverageFitness /= creatures.Count;
@@ -80,7 +83,7 @@ namespace NeuralCreatures {
 		private void CrossOver (List<Creature> creatures, Rectangle bounds) {
 			int crossOverCount = (int) (creatures.Count * CrossOverChance / 100);
 
-			for (int _ = 0; _ < crossOverCount; ++_) {
+			for (int i = 0; i < crossOverCount; ++i) {
 				Creature parentA = Selection();
 				Creature parentB = Selection();
 
@@ -91,12 +94,12 @@ namespace NeuralCreatures {
 
 				int crossOverPoint = Rand.Next(0, parentAWeights.Length);
 
-				for (int i = 0; i < crossOverPoint; ++i) {
-					childWeights[i] = parentAWeights[i];
+				for (int j = 0; j < crossOverPoint; ++j) {
+					childWeights[j] = parentAWeights[j];
 				}
 
-				for (int i = crossOverPoint; i < parentAWeights.Length; ++i) {
-					childWeights[i] = parentBWeights[i];
+				for (int j = crossOverPoint; j < parentAWeights.Length; ++j) {
+					childWeights[j] = parentBWeights[j];
 				}
 
 				Creature child = new Creature(bounds);

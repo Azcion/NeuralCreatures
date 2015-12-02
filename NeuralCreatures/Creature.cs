@@ -8,6 +8,7 @@ namespace NeuralCreatures {
 
 	public class Creature {
 
+		public int Age;
 		public Vector2 Position;
 		public double Angle;
 		public NeuralNetwork Brain;
@@ -20,6 +21,8 @@ namespace NeuralCreatures {
 		private Vector2 origin;
 
 		public Creature (Rectangle bounds) {
+			Age = 0;
+
 			Bounds = bounds;
 			Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
 								   Rand.Next(Bounds.Top, Bounds.Bottom));
@@ -54,23 +57,24 @@ namespace NeuralCreatures {
 			Vector2 origin = new Vector2(32, 32);
 			Vector2 leftSensor = ExtendedPoint(Position, Angle - 135, 100);
 			Vector2 rightSensor = ExtendedPoint(Position, Angle - 45, 100);
-			Food closestFood = GetClosestFood(food, Position);
-			Obstacle closestObstacle = GetClosestObstacle(obstacles, Position);
-			double closestFoodLeft = GetDistance(closestFood.Position, leftSensor);
-			double closestFoodRight = GetDistance(closestFood.Position, rightSensor);
-			double closestObstacleLeft = GetDistance(closestObstacle.Position, leftSensor);
-			double closestObstacleRight = GetDistance(closestObstacle.Position, rightSensor);
-			double centerDistanceFood = GetDistance(closestFood.Position, Position);
-			double centerDistanceObstacle = GetDistance(closestObstacle.Position, Position);
+			Food closestFoodItem = GetClosestFood(food, Position);
+			Vector2 closestFood = closestFoodItem.Position;
+			Vector2 closestObstacle = GetClosestObstacle(obstacles, Position).Position;
+			double closestFoodLeft = GetDistance(closestFood, leftSensor);
+			double closestFoodRight = GetDistance(closestFood, rightSensor);
+			double closestObstacleLeft = GetDistance(closestObstacle, leftSensor);
+			double closestObstacleRight = GetDistance(closestObstacle, rightSensor);
+			double centerDistanceFood = GetDistance(closestFood, Position);
+			double centerDistanceObstacle = GetDistance(closestObstacle, Position);
 
-			if (centerDistanceFood < 50) {
+			if (centerDistanceFood < 15) {
 				Life += 30;
 				Fitness += 10;
-				closestFood.Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
-												   Rand.Next(Bounds.Top, Bounds.Bottom));
+				closestFoodItem.Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
+										   Rand.Next(Bounds.Top, Bounds.Bottom));
 			}
 
-			Life -= .025;
+			Life -= .1;
 
 			if (centerDistanceFood < centerDistanceObstacle) {
 				if (closestFoodLeft > closestFoodRight) {
@@ -184,7 +188,7 @@ namespace NeuralCreatures {
 			}
 
 			Rectangle sourceRect = new Rectangle(Frame * 32, 0, 32, 32);
-			Rectangle destinRect = new Rectangle((int) Position.X, (int) Position.Y, 64, 64);
+			Rectangle destinRect = new Rectangle((int) Position.X, (int) Position.Y, 64 + 32 * Age, 64 + 32 * Age);
 
 			batch.Draw(texture, destinRect, sourceRect, Color.White, (float) (Angle * MathHelper.Pi / 180),
 				       origin, SpriteEffects.None, 0f);

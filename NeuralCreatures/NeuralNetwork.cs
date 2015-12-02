@@ -27,19 +27,29 @@ namespace NeuralCreatures {
 
 		public struct Network {
 			public Layer[] Layers;
+			public int LayerCount;
 			public double LearningRate;
 		}
 
 		public Network Brain;
 
 		public NeuralNetwork (double learningRate, int inputs, int hidden, int outputs) {
-			double[] layerArr = { inputs, hidden, outputs };
+			double[] layerArr = new double[3];
+			layerArr[0] = inputs;
+			layerArr[1] = hidden;
+			layerArr[2] = outputs;
+
+			Brain.LayerCount = layerArr.Length;
+
+			if (Brain.LayerCount < 2) {
+				return;
+			}
 
 			Fitness = 0;
 			Brain.LearningRate = learningRate;
-			Brain.Layers = new Layer[3];
+			Brain.Layers = new Layer[Brain.LayerCount];
 
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				Brain.Layers[i].NeuronCount = (int) layerArr[i];
 				Brain.Layers[i].Neurons = new Neuron[(int) layerArr[i]];
 
@@ -62,7 +72,7 @@ namespace NeuralCreatures {
 				return null;
 			}
 
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
 					if (i == 0) {
 						Brain.Layers[0].Neurons[j].Value = inputArr[j];
@@ -78,10 +88,10 @@ namespace NeuralCreatures {
 				}
 			}
 
-			double[] outResult = new double[Brain.Layers[2].NeuronCount];
+			double[] outResult = new double[Brain.Layers[Brain.LayerCount - 1].NeuronCount];
 
-			for (int i = 0; i < Brain.Layers[2].NeuronCount; ++i) {
-				double value = Brain.Layers[2].Neurons[i].Value;
+			for (int i = 0; i < Brain.Layers[Brain.LayerCount - 1].NeuronCount; ++i) {
+				double value = Brain.Layers[Brain.LayerCount - 1].Neurons[i].Value;
 				outResult[i] = value > 1 ? 1 : value < -1 ? -1 : value;
 			}
 
@@ -97,7 +107,7 @@ namespace NeuralCreatures {
 		}
 
 		private void Randomize () {
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
 					if (i != 0) {
 						Brain.Layers[i].Neurons[j].Bias = GetRand();
@@ -113,7 +123,7 @@ namespace NeuralCreatures {
 			double[] weights = new double[GetDendriteCount()];
 			int dendriteCount = 0;
 
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
 					if (i != 0) {
 						for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
@@ -130,7 +140,7 @@ namespace NeuralCreatures {
 		public void SetWeights (double[] weights) {
 			int dendriteCount = 0;
 
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
 					if (i != 0) {
 						for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
@@ -145,10 +155,12 @@ namespace NeuralCreatures {
 		public int GetDendriteCount () {
 			int dendriteCount = 0;
 
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
 					if (i != 0) {
-						++dendriteCount;
+						for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
+							++dendriteCount;
+						}
 					}
 				}
 			}
@@ -160,7 +172,7 @@ namespace NeuralCreatures {
 			int biasCount = 0;
 			double[] bias = new double[GetBiasCount()];
 
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
 					if (i != 0) {
 						bias[biasCount] = Brain.Layers[i].Neurons[j].Bias;
@@ -175,7 +187,7 @@ namespace NeuralCreatures {
 		private void SetBias (double[] bias) {
 			int biasCount = 0;
 
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
 					if (i != 0) {
 						Brain.Layers[i].Neurons[j].Bias = bias[biasCount];
@@ -188,7 +200,7 @@ namespace NeuralCreatures {
 		private int GetBiasCount () {
 			int biasCount = 0;
 
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
 					if (i != 0) {
 						++biasCount;
