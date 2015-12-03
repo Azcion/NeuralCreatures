@@ -57,11 +57,11 @@ namespace NeuralCreatures {
 
 		#region Constructor
 
-		public Camera (Viewport viewport) {
+		public Camera (Viewport viewport, int width, int height) {
 			_zoom = .2f;
 			_scroll = 1;
 			_rotation = 0f;
-			_pos = new Vector2(1600 / 2, 900 / 2);
+			_pos = new Vector2(width / 2, height / 2);
 			_viewport = viewport;
 		}
 

@@ -14,12 +14,13 @@ namespace NeuralCreatures {
 
 		World world;
 
-		KeyboardState LastKBState;
+		KeyboardState lastKeyState;
 
 		public Game () {
 			graphics = new GraphicsDeviceManager(this);
-			graphics.PreferredBackBufferWidth = 1600;
-			graphics.PreferredBackBufferHeight = 900;
+			graphics.PreferredBackBufferWidth = 1152;
+			graphics.PreferredBackBufferHeight = 864;
+			this.Window.AllowUserResizing = true;
 			Content.RootDirectory = "Content";
 			this.IsMouseVisible = true;
 			InactiveSleepTime = new TimeSpan(0);
@@ -34,7 +35,9 @@ namespace NeuralCreatures {
 		/// and initialize them as well.
 		/// </summary>
 		protected override void Initialize () {
-			world = new World(Content, new Rectangle(-2000, -2000, 4000, 4000));
+			world = new World(Content, new Rectangle(-2000, -2000, 4000, 4000),
+							  graphics.GraphicsDevice.PresentationParameters.BackBufferWidth,
+							  graphics.GraphicsDevice.PresentationParameters.BackBufferHeight);
 
 			base.Initialize();
 		}
@@ -70,17 +73,17 @@ namespace NeuralCreatures {
 
 			world.Update();
 
-			if (Keyboard.GetState().IsKeyUp(Keys.T) && LastKBState.IsKeyDown(Keys.T)) {
+			if (Keyboard.GetState().IsKeyUp(Keys.T) && lastKeyState.IsKeyDown(Keys.T)) {
 				IsFixedTimeStep = !IsFixedTimeStep;
 				graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
 				graphics.ApplyChanges();
 			}
 
-			if (Keyboard.GetState().IsKeyUp(Keys.B) && LastKBState.IsKeyDown(Keys.B)) {
+			if (Keyboard.GetState().IsKeyUp(Keys.B) && lastKeyState.IsKeyDown(Keys.B)) {
 				world.DoDraw = !world.DoDraw;
 			}
 
-			LastKBState = Keyboard.GetState();
+			lastKeyState = Keyboard.GetState();
 
 			base.Update(gameTime);
 		}
@@ -92,7 +95,9 @@ namespace NeuralCreatures {
 		protected override void Draw (GameTime gameTime) {
 			GraphicsDevice.Clear(Color.CornflowerBlue);
 
-			world.Draw(spriteBatch);
+			world.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds,
+					   graphics.GraphicsDevice.PresentationParameters.BackBufferWidth,
+					   graphics.GraphicsDevice.PresentationParameters.BackBufferHeight);
 
 			base.Draw(gameTime);
 		}
