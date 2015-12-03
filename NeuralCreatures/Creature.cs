@@ -47,6 +47,7 @@ namespace NeuralCreatures {
 				return;
 			}
 
+			// Animation
 			++Frame;
 			if (Frame > 7) {
 				Frame = 0;
@@ -188,7 +189,7 @@ namespace NeuralCreatures {
 			}
 
 			Rectangle sourceRect = new Rectangle(Frame * 32, 0, 32, 32);
-			Rectangle destinRect = new Rectangle((int) Position.X, (int) Position.Y, 64 + 32 * Age, 64 + 32 * Age);
+			Rectangle destinRect = new Rectangle((int) Position.X, (int) Position.Y, 64 + 8 * Age, 64 + 8 * Age);
 
 			batch.Draw(texture, destinRect, sourceRect, Color.White, (float) (Angle * MathHelper.Pi / 180),
 				       origin, SpriteEffects.None, 0f);

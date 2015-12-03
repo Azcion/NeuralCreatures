@@ -103,6 +103,7 @@ namespace NeuralCreatures {
 				}
 
 				Creature child = new Creature(bounds);
+				child.Position = new Vector2(parentA.Position.X - 10, parentA.Position.Y - 10);
 				child.Brain.SetWeights(childWeights);
 				NextGeneration.Add(child);
 			}
