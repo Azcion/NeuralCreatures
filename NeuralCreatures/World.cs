@@ -20,6 +20,7 @@ namespace NeuralCreatures {
 		public int Deaths;
 		public int TotalDeaths;
 		public bool DoDraw;
+		public FrameCounter Fps;
 
 		public int CreatureCount = 100;
 		public List<Creature> Creatures;
@@ -39,6 +40,7 @@ namespace NeuralCreatures {
 			TxFood = content.Load<Texture2D>("Food");
 			Font = content.Load<SpriteFont>("Font");
 			Shapes = new BasicShapes();
+			Fps = new FrameCounter();
 
 			Creatures = new List<Creature>();
 
@@ -59,7 +61,7 @@ namespace NeuralCreatures {
 			}
 
 			Camera = new Camera(new Viewport(0, 0, width, height), width + width / 4, height);
-			GA = new GeneticAlgorithm(25, 1);
+			GA = new GeneticAlgorithm(30, 1);
 			Deaths = 0;
 			TotalDeaths = 0;
 			graphValue = new double[32000];
@@ -140,6 +142,12 @@ namespace NeuralCreatures {
 			batch.DrawString(Font, "Crossover:  " + GA.CrossOverChance + "%", new Vector2(10, 90), Color.Black);
 			batch.DrawString(Font, "Mutation:   " + GA.MutationChance + "%", new Vector2(10, 110), Color.Black);
 			DrawGraph(batch, width, height);
+
+			Fps.Update((float) elapsedTime);
+			try {
+				batch.DrawString(Font, "FPS: " + (int) Fps.AverageFramesPerSecond, new Vector2(10, 130), Color.Black);
+			} catch (System.ArgumentException) {
+			}
 
 			batch.End();
 		}
