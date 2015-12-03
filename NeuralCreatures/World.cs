@@ -32,7 +32,7 @@ namespace NeuralCreatures {
 
 		private double[] graphValue;
 
-		public World (ContentManager content, Rectangle bounds) {
+		public World (ContentManager content, Rectangle bounds, int width, int height) {
 			Bounds = bounds;
 			TxCreature = content.Load<Texture2D>("Bug");
 			TxPoint = content.Load<Texture2D>("Point");
@@ -58,7 +58,7 @@ namespace NeuralCreatures {
 				Obstacles.Add(new Obstacle(bounds));
 			}
 
-			Camera = new Camera(new Viewport(0, 0, 1600, 900));
+			Camera = new Camera(new Viewport(0, 0, width, height), width + width / 4, height);
 			GA = new GeneticAlgorithm(25, 1);
 			Deaths = 0;
 			TotalDeaths = 0;
@@ -99,7 +99,7 @@ namespace NeuralCreatures {
 			}
 		}
 
-		public void Draw (SpriteBatch batch) {
+		public void Draw (SpriteBatch batch, double elapsedTime, int width, int height) {
 			if (DoDraw) {
 				batch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
@@ -139,12 +139,12 @@ namespace NeuralCreatures {
 			batch.DrawString(Font, "Elitism:    " + GA.ElitismChance + "%", new Vector2(10, 70), Color.Black);
 			batch.DrawString(Font, "Crossover:  " + GA.CrossOverChance + "%", new Vector2(10, 90), Color.Black);
 			batch.DrawString(Font, "Mutation:   " + GA.MutationChance + "%", new Vector2(10, 110), Color.Black);
-			DrawGraph(batch);
+			DrawGraph(batch, width, height);
 
 			batch.End();
 		}
 
-		private void DrawGraph (SpriteBatch batch) {
+		private void DrawGraph (SpriteBatch batch, int width, int height) {
 			double scale = 1;
 			double max = 0;
 			double total = 0;
@@ -160,18 +160,18 @@ namespace NeuralCreatures {
 
 			scale = max > 100 ? 100 / max : scale;
 
-			Shapes.DrawLine(batch, new Vector2(0, 900),
-								   new Vector2(2, (float) (900 - graphValue[0] * scale)),
+			Shapes.DrawLine(batch, new Vector2(0, height),
+								   new Vector2(2, (float) (height - graphValue[0] * scale)),
 								   Color.Black, TxPoint, 1);
 
 			for (int i = 1; i < GA.Generation; ++i) {
-				Shapes.DrawLine(batch, new Vector2(i * 2, (float) (900 - graphValue[i - 1] * scale)),
-									   new Vector2(i * 2 + 2, (float) (900 - graphValue[i] * scale)),
+				Shapes.DrawLine(batch, new Vector2(i * 2, (float) (height - graphValue[i - 1] * scale)),
+									   new Vector2(i * 2 + 2, (float) (height - graphValue[i] * scale)),
 									   Color.Black, TxPoint, 1);
 			}
 
-			Shapes.DrawLine(batch, new Vector2(0, (float) (900 - average * scale)),
-								   new Vector2(2, (float) (1600 - average * scale)),
+			Shapes.DrawLine(batch, new Vector2(0, (float) (height - average * scale)),
+								   new Vector2(2, (float) (width - average * scale)),
 								   Color.Blue, TxPoint, 1);
 		}
 	}
