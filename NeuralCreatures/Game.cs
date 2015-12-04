@@ -99,8 +99,19 @@ namespace NeuralCreatures {
 			}
 
 			// Exit game
-			if (Keyboard.GetState().IsKeyDown(Keys.Escape)) {
+			if (Keyboard.GetState().IsKeyUp(Keys.Escape) && lastKeyState.IsKeyDown(Keys.Escape)) {
 				this.Exit();
+			}
+
+			// Dump weights
+			if (Keyboard.GetState().IsKeyUp(Keys.RightControl) && lastKeyState.IsKeyDown(Keys.RightControl)) {
+				world.Dump();
+			}
+
+			// Read weights
+			if (Keyboard.GetState().IsKeyDown(Keys.RightShift) && Keyboard.GetState().IsKeyDown(Keys.Enter)
+				&& lastKeyState.IsKeyUp(Keys.Enter)) {
+				world.Read();
 			}
 
 			// Toggle vsync

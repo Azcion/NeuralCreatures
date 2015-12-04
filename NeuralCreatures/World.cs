@@ -2,7 +2,10 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace NeuralCreatures {
 
@@ -223,6 +226,51 @@ namespace NeuralCreatures {
 			Shapes.DrawLine(batch, new Vector2(0, (float) (height - average * scale)),
 								   new Vector2(2, (float) (width - average * scale)),
 								   Color.Blue, TxPoint, 1);
+		}
+
+		public void Dump () {
+			try {
+				int i = 0;
+				string[] lines = new string[CreatureCount];
+
+				foreach (Creature c in Creatures) {
+					foreach (double weight in c.Brain.GetWeights()) {
+						lines[i] += weight + " ";
+					}
+					++i;
+				}
+
+				File.WriteAllLines("weights.txt", lines);
+
+				Console.WriteLine("Weights writing successful.");
+			} catch (Exception) {
+				return;
+			}
+		}
+
+		public void Read () {
+			try {
+				int i = 0;
+				string[] lines = File.ReadAllLines("weights.txt");
+				double[] weights = new double[CreatureCount];
+
+				foreach (Creature c in Creatures) {
+					c.Kill();
+					c.Reset();
+
+					string[] line = lines[i].Split();
+
+					for (int j = 0; j < c.Brain.GetDendriteCount(); ++j) {
+						weights[j] = double.Parse(line[j]);
+					}
+					
+					c.Brain.SetWeights(weights);
+				}
+
+				Console.WriteLine("Weights reading successful.");
+			} catch (Exception) {
+				return;
+			}
 		}
 	}
 }
