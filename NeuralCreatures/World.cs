@@ -106,7 +106,11 @@ namespace NeuralCreatures {
 			}
 
 			if (Mouse.GetState().RightButton == ButtonState.Pressed) {
-				Obstacles.Clear();
+				Vector2 mouse = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
+				mouse = Vector2.Transform(mouse, Camera.InverseTransform);
+				if (Bounds.Contains(Origin(mouse))) {
+					Obstacles.Clear();
+				}
 			}
 		}
 
