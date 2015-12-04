@@ -68,17 +68,24 @@ namespace NeuralCreatures {
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Update (GameTime gameTime) {
 			// Allows the game to exit
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed) {
 				this.Exit();
+			}
+
+			if (Keyboard.GetState().IsKeyDown(Keys.Escape)) {
+				this.Exit();
+			}
 
 			world.Update();
 
+			// Toggle vsync
 			if (Keyboard.GetState().IsKeyUp(Keys.T) && lastKeyState.IsKeyDown(Keys.T)) {
 				IsFixedTimeStep = !IsFixedTimeStep;
 				graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
 				graphics.ApplyChanges();
 			}
 
+			// Toggle scene
 			if (Keyboard.GetState().IsKeyUp(Keys.B) && lastKeyState.IsKeyDown(Keys.B)) {
 				world.DoDraw = !world.DoDraw;
 			}

@@ -14,6 +14,8 @@ namespace NeuralCreatures {
 		public NeuralNetwork Brain;
 		public int Frame;
 		public Rectangle Bounds;
+
+		public bool Dead;
 		public double Life;
 		public double Fitness;
 		public double ParentChance;
@@ -27,8 +29,10 @@ namespace NeuralCreatures {
 			Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
 								   Rand.Next(Bounds.Top, Bounds.Bottom));
 			Angle = Rand.Next(0, 360);
-			Brain = new NeuralNetwork(0, 4, 250, 3);
+			Brain = new NeuralNetwork(0, 4, 4, 3);
 			Frame = Rand.Next(0, 8);
+
+			Dead = false;
 			Life = 100;
 			origin = new Vector2(16, 16);
 		}
@@ -37,13 +41,24 @@ namespace NeuralCreatures {
 			Rand = new Random(Guid.NewGuid().GetHashCode());
 			Angle = Rand.Next(0, 360);
 			Frame = Rand.Next(0, 8);
+			Dead = false;
 			Fitness = 0;
 			Life = 100;
 		}
 
+		public void Kill () {
+			Dead = true;
+			Fitness = 0;
+			Life = 0;
+			ParentChance = 0;
+			Age = 0;
+		}
+
 		public void Update (List<Food> food, List<Obstacle> obstacles) {
-			if (Life <= 0) {
-				Fitness = 0;
+			if (!Dead && Life <= 0) {
+				Kill();
+				return;
+			} else if (Dead) {
 				return;
 			}
 
@@ -68,14 +83,14 @@ namespace NeuralCreatures {
 			double centerDistanceFood = GetDistance(closestFood, Position);
 			double centerDistanceObstacle = GetDistance(closestObstacle, Position);
 
-			if (centerDistanceFood < 15) {
+			if (centerDistanceFood < 50) {
 				Life += 30;
 				Fitness += 10;
 				closestFoodItem.Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
 										   Rand.Next(Bounds.Top, Bounds.Bottom));
 			}
 
-			Life -= .1;
+			Life -= .05;
 
 			if (centerDistanceFood < centerDistanceObstacle) {
 				if (closestFoodLeft > closestFoodRight) {
@@ -183,7 +198,7 @@ namespace NeuralCreatures {
 			return Math.Sqrt(dist.X * dist.X + dist.Y * dist.Y);
 		}
 
-		public void Draw (SpriteBatch batch, Texture2D texture) {
+		public void Draw (SpriteBatch batch, Texture2D texture, Color color) {
 			if (Life <= 0) {
 				return;
 			}
@@ -191,8 +206,16 @@ namespace NeuralCreatures {
 			Rectangle sourceRect = new Rectangle(Frame * 32, 0, 32, 32);
 			Rectangle destinRect = new Rectangle((int) Position.X, (int) Position.Y, 64 + 8 * Age, 64 + 8 * Age);
 
-			batch.Draw(texture, destinRect, sourceRect, Color.White, (float) (Angle * MathHelper.Pi / 180),
+			batch.Draw(texture, destinRect, sourceRect, color, (float) (Angle * MathHelper.Pi / 180),
 				       origin, SpriteEffects.None, 0f);
+		}
+
+		public override string ToString () {
+			return string.Format("Dead: {0}\n"
+								+ "Life: {1}\n"
+								+ "Fitness: {2}\n"
+								+ "Parent: {3}%",
+								Dead, (float) Life, Fitness, (float) ParentChance);
 		}
 	}
 }

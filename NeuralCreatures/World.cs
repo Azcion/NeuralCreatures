@@ -28,7 +28,7 @@ namespace NeuralCreatures {
 		public int FoodCount = 200;
 		public List<Food> Food;
 
-		public int ObstacleCount = 0;
+		public int ObstacleCount = 100;
 		public List<Obstacle> Obstacles;
 
 		private double[] graphValue;
@@ -61,7 +61,7 @@ namespace NeuralCreatures {
 			}
 
 			Camera = new Camera(new Viewport(0, 0, width, height), width + width / 4, height);
-			GA = new GeneticAlgorithm(30, 1);
+			GA = new GeneticAlgorithm(75, 1);
 			Deaths = 0;
 			TotalDeaths = 0;
 			graphValue = new double[32000];
@@ -75,14 +75,17 @@ namespace NeuralCreatures {
 
 			foreach (Creature c in Creatures) {
 				c.Update(Food, Obstacles);
-				Deaths += c.Life <= 0 ? 1 : 0;
+				if (c.Life <= 0) {
+					++Deaths;
+				}
 			}
 
-			TotalDeaths += Deaths;
+			
 
 			++Ticks;
 
-			if (Ticks >= 1000 || Deaths == Creatures.Count) {
+			if (Ticks >= 1500 || Deaths == Creatures.Count) {
+				TotalDeaths += Deaths;
 				Ticks = 0;
 				graphValue[GA.Generation] = GA.Evolve(Creatures, Bounds);
 			}
@@ -114,8 +117,11 @@ namespace NeuralCreatures {
 				}
 
 				foreach (Creature c in Creatures) {
-					c.Draw(batch, TxCreature);
+					c.Draw(batch, TxCreature, Color.White);
 				}
+
+				// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+				Creatures[0].Draw(batch, TxCreature, Color.Red);
 
 				Shapes.DrawLine(batch, new Vector2(Bounds.Left - 100, Bounds.Top - 100),
 									   new Vector2(Bounds.Right + 100, Bounds.Top - 100),
@@ -135,19 +141,37 @@ namespace NeuralCreatures {
 
 			batch.Begin();
 
-			batch.DrawString(Font, "Generation: " + GA.Generation, new Vector2(10, 10), Color.Black);
-			batch.DrawString(Font, "Tick:       " + Ticks, new Vector2(10, 30), Color.Black);
-			batch.DrawString(Font, "Deaths:     " + TotalDeaths, new Vector2(10, 50), Color.Black);
-			batch.DrawString(Font, "Elitism:    " + GA.ElitismChance + "%", new Vector2(10, 70), Color.Black);
-			batch.DrawString(Font, "Crossover:  " + GA.CrossOverChance + "%", new Vector2(10, 90), Color.Black);
-			batch.DrawString(Font, "Mutation:   " + GA.MutationChance + "%", new Vector2(10, 110), Color.Black);
-			DrawGraph(batch, width, height);
+			// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+			batch.DrawString(Font, Creatures[0].ToString(), new Vector2(10, 500), Color.Red);
+
+			string stats = string.Format( "Generation: {0}\n"
+										+ "Tick:       {1}\n"
+										+ "Deaths:     {2}\n"
+										+ "Elitism:    {3}%\n"
+										+ "Crossover:  {4}%\n"
+										+ "Mutations:  {5}",
+										GA.Generation, Ticks, Deaths, GA.ElitismChance,
+										GA.CrossOverChance, GA.TotalMutations);
+			batch.DrawString(Font, stats, new Vector2(10, 10), Color.Black);
 
 			Fps.Update((float) elapsedTime);
 			try {
-				batch.DrawString(Font, "FPS: " + (int) Fps.AverageFramesPerSecond, new Vector2(10, 130), Color.Black);
+				batch.DrawString(Font, "FPS: " + (int) Fps.AverageFramesPerSecond, new Vector2(10, 170), Color.Black);
 			} catch (System.ArgumentException) {
 			}
+
+			string controls = string.Format( "Controls:\n"
+										   + " WASD   - pan\n"
+										   + " QE     - rotate\n"
+										   + " scroll - zoom\n"
+										   + " R      - reset view\n"
+										   + " T      - toggle vsync\n"
+										   + " B      - toggle scene\n"
+										   + " LMB    - place obstacle\n"
+										   + " RMB    - clear obstacles");
+			batch.DrawString(Font, controls, new Vector2(10, 230), Color.DarkSlateGray);
+
+			DrawGraph(batch, width, height);
 
 			batch.End();
 		}

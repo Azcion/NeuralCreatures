@@ -14,12 +14,13 @@ namespace NeuralCreatures {
 		public double MutationChance;
 		public double AverageFitness;
 		public double HighestFitness;
+		public int TotalMutations;
 
 		public List<Creature> NextGeneration;
 
-		public GeneticAlgorithm (int crossOverChance, int mutationChance) {
-			CrossOverChance = crossOverChance;
-			ElitismChance = 100 - crossOverChance;
+		public GeneticAlgorithm (int elitismChance, int mutationChance) {
+			CrossOverChance = 100 - elitismChance;
+			ElitismChance = elitismChance;
 			MutationChance = mutationChance;
 		}
 
@@ -54,7 +55,15 @@ namespace NeuralCreatures {
 			AverageFitness /= creatures.Count;
 
 			foreach (Creature c in creatures) {
-				c.ParentChance = HighestFitness == 0 ? 100 : c.Fitness / HighestFitness * 100;
+				if (HighestFitness > 0) {
+					if (!c.Dead) {
+						c.ParentChance = c.Fitness / HighestFitness * 100;
+					} else {
+						c.ParentChance = 0;
+					}
+				} else {
+					c.ParentChance = 100;
+				}
 			}
 		}
 
@@ -70,14 +79,18 @@ namespace NeuralCreatures {
 		private Creature Selection () {
 			NextGeneration = NextGeneration.OrderBy(Creature => Guid.NewGuid()).ToList();
 			int parentThreshold = Rand.Next(0, 100);
+			Creature bestC = NextGeneration[0];
 
 			foreach (Creature c in NextGeneration) {
+				if (c.ParentChance > bestC.ParentChance) {
+					bestC = c;
+				}
 				if (c.ParentChance > parentThreshold) {
 					return c;
 				}
 			}
 
-			return null;
+			return bestC;
 		}
 
 		private void CrossOver (List<Creature> creatures, Rectangle bounds) {
@@ -112,6 +125,7 @@ namespace NeuralCreatures {
 		private void Mutate () {
 			foreach (Creature c in NextGeneration) {
 				if (Rand.Next(0, 100) < MutationChance) {
+					++TotalMutations;
 					int MutationPoint = Rand.Next(0, c.Brain.GetDendriteCount());
 					double[] weights = c.Brain.GetWeights();
 					weights[MutationPoint] = Rand.NextDouble();
@@ -122,8 +136,9 @@ namespace NeuralCreatures {
 
 		private void CopyCreatures (List<Creature> creatures) {
 			for (int i = 0; i < creatures.Count; ++i) {
-				creatures[i] = NextGeneration[i];
-				creatures[i].Reset();
+				Creature c = NextGeneration[i];
+				c.Reset();
+				creatures[i] = c;
 			}
 		}
 	}
