@@ -32,6 +32,7 @@ namespace NeuralCreatures {
 		public List<Obstacle> Obstacles;
 
 		private double[] graphValue;
+		private int selectedCreature;
 
 		public World (ContentManager content, Rectangle bounds, int width, int height) {
 			Bounds = bounds;
@@ -56,14 +57,10 @@ namespace NeuralCreatures {
 
 			Obstacles = new List<Obstacle>();
 
-			for (int i = 0; i < ObstacleCount; ++i) {
-				Obstacles.Add(new Obstacle(bounds));
-			}
+			AddObstacles(0);
 
 			Camera = new Camera(new Viewport(0, 0, width, height), width + width / 4, height);
 			GA = new GeneticAlgorithm(75, 1);
-			Deaths = 0;
-			TotalDeaths = 0;
 			graphValue = new double[32000];
 			DoDraw = true;
 		}
@@ -80,8 +77,6 @@ namespace NeuralCreatures {
 				}
 			}
 
-			
-
 			++Ticks;
 
 			if (Ticks >= 1500 || Deaths == Creatures.Count) {
@@ -90,17 +85,39 @@ namespace NeuralCreatures {
 				graphValue[GA.Generation] = GA.Evolve(Creatures, Bounds);
 			}
 
+			ProcessInput();
+		}
+
+		private void ProcessInput () {
 			if (Mouse.GetState().LeftButton == ButtonState.Pressed) {
 				if (Ticks % 10 == 0) {
 					Obstacle newObstacle = new Obstacle(Bounds);
 					newObstacle.Position = Vector2.Transform(new Vector2(Mouse.GetState().X, Mouse.GetState().Y),
-					                                         Camera.InverseTransform);
+															 Camera.InverseTransform);
 					Obstacles.Add(newObstacle);
 				}
 			}
 
 			if (Mouse.GetState().RightButton == ButtonState.Pressed) {
 				Obstacles.Clear();
+			}
+		}
+
+		public void AddObstacles (int style) {
+			switch (style) {
+				case 0:
+					for (int i = 0; i < ObstacleCount; ++i) {
+						Obstacles.Add(new Obstacle(Bounds));
+					}
+					break;
+			}
+		}
+
+		public void CycleCreatures () {
+			if (selectedCreature == CreatureCount - 1) {
+				selectedCreature = 0;
+			} else {
+				++selectedCreature;
 			}
 		}
 
@@ -120,8 +137,7 @@ namespace NeuralCreatures {
 					c.Draw(batch, TxCreature, Color.White);
 				}
 
-				// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-				Creatures[0].Draw(batch, TxCreature, Color.Red);
+				Creatures[selectedCreature].Draw(batch, TxCreature, Color.Red);
 
 				Shapes.DrawLine(batch, new Vector2(Bounds.Left - 100, Bounds.Top - 100),
 									   new Vector2(Bounds.Right + 100, Bounds.Top - 100),
@@ -141,9 +157,6 @@ namespace NeuralCreatures {
 
 			batch.Begin();
 
-			// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-			batch.DrawString(Font, Creatures[0].ToString(), new Vector2(10, 500), Color.Red);
-
 			string stats = string.Format( "Generation: {0}\n"
 										+ "Tick:       {1}\n"
 										+ "Deaths:     {2}\n"
@@ -154,22 +167,27 @@ namespace NeuralCreatures {
 										GA.CrossOverChance, GA.TotalMutations);
 			batch.DrawString(Font, stats, new Vector2(10, 10), Color.Black);
 
-			Fps.Update((float) elapsedTime);
 			try {
-				batch.DrawString(Font, "FPS: " + (int) Fps.AverageFramesPerSecond, new Vector2(10, 170), Color.Black);
+				Fps.Update((float) elapsedTime);
+				batch.DrawString(Font, "FPS: " + (int) Fps.AverageFramesPerSecond, new Vector2(10, 160), Color.Black);
 			} catch (System.ArgumentException) {
 			}
 
-			string controls = string.Format( "Controls:\n"
-										   + " WASD   - pan\n"
-										   + " QE     - rotate\n"
-										   + " scroll - zoom\n"
-										   + " R      - reset view\n"
-										   + " T      - toggle vsync\n"
-										   + " B      - toggle scene\n"
-										   + " LMB    - place obstacle\n"
-										   + " RMB    - clear obstacles");
-			batch.DrawString(Font, controls, new Vector2(10, 230), Color.DarkSlateGray);
+			string controls = "Controls:\n"
+					+ " WASD   - pan\n"
+					+ " QE     - rotate\n"
+					+ " scroll - zoom\n"
+					+ " R      - reset view\n"
+					+ " T      - toggle vsync\n"
+					+ " B      - toggle scene\n"
+					+ " O      - spawn obstacles\n"
+					+ " LMB    - place obstacle\n"
+					+ " RMB    - clear obstacles\n"
+					+ " Tab    - cycle creatures";
+
+			batch.DrawString(Font, controls, new Vector2(10, 250), Color.DarkSlateGray);
+
+			batch.DrawString(Font, Creatures[selectedCreature].ToString(), new Vector2(10, 550), Color.Red);
 
 			DrawGraph(batch, width, height);
 
