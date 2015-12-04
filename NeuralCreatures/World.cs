@@ -91,13 +91,17 @@ namespace NeuralCreatures {
 			ProcessInput();
 		}
 
+		private Point Origin (Vector2 v) {
+			return new Point(Convert.ToInt32(v.X), Convert.ToInt32(v.Y));
+		}
+
 		private void ProcessInput () {
-			if (Mouse.GetState().LeftButton == ButtonState.Pressed) {
-				if (Ticks % 10 == 0) {
-					Obstacle newObstacle = new Obstacle(Bounds);
-					newObstacle.Position = Vector2.Transform(new Vector2(Mouse.GetState().X, Mouse.GetState().Y),
-															 Camera.InverseTransform);
-					Obstacles.Add(newObstacle);
+			if ((Mouse.GetState().LeftButton == ButtonState.Pressed) && (Ticks % 10 == 0)) {
+				Vector2 mouse = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
+				Obstacle obstacle = new Obstacle(Bounds);
+				obstacle.Position = Vector2.Transform(mouse, Camera.InverseTransform);
+				if (Bounds.Contains(Origin(obstacle.Position))) {
+					Obstacles.Add(obstacle);
 				}
 			}
 
@@ -173,7 +177,7 @@ namespace NeuralCreatures {
 			try {
 				Fps.Update((float) elapsedTime);
 				batch.DrawString(Font, "FPS: " + (int) Fps.AverageFramesPerSecond, new Vector2(10, 160), Color.Black);
-			} catch (System.ArgumentException) {
+			} catch (ArgumentException) {
 			}
 
 			string controls = "Controls:\n"
