@@ -17,6 +17,8 @@ namespace NeuralCreatures {
 		protected MouseState _mouseState;
 		protected KeyboardState _keyboardState;
 		protected int _scroll;
+		protected int _width;
+		protected int _height;
 
 		#endregion
 
@@ -63,6 +65,8 @@ namespace NeuralCreatures {
 			_rotation = 0f;
 			_pos = new Vector2(width / 2, height / 2);
 			_viewport = viewport;
+			_width = width;
+			_height = height;
 		}
 
 		#endregion
@@ -113,6 +117,13 @@ namespace NeuralCreatures {
 					case Keys.D: _pos.X -= 4f; break;
 					case Keys.W: _pos.Y += 4f; break;
 					case Keys.S: _pos.Y -= 4f; break;
+					// Reset
+					case Keys.R:
+						_zoom = .2f;
+						_scroll = 1;
+						_rotation = 0f;
+						_pos = new Vector2(_width / 2, _height / 2);
+						break;
 				}
 			}
 		}
