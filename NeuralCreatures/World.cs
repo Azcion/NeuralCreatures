@@ -28,7 +28,7 @@ namespace NeuralCreatures {
 		public int CreatureCount = 100;
 		public List<Creature> Creatures;
 
-		public int FoodCount = 200;
+		public int FoodCount = 100;
 		public List<Food> Food;
 
 		public int ObstacleCount = 100;
@@ -53,13 +53,9 @@ namespace NeuralCreatures {
 			}
 
 			Food = new List<Food>();
-
-			for (int i = 0; i < FoodCount; ++i) {
-				Food.Add(new Food(bounds));
-			}
-
 			Obstacles = new List<Obstacle>();
 
+			AddFood(0);
 			AddObstacles(0);
 
 			Camera = new Camera(new Viewport(0, 0, width, height), width + width / 4, height);
@@ -86,6 +82,11 @@ namespace NeuralCreatures {
 				TotalDeaths += Deaths;
 				Ticks = 0;
 				graphValue[GA.Generation] = GA.Evolve(Creatures, Bounds);
+
+				if (GA.Generation % 10 == 0) {
+					Obstacles.Clear();
+					AddObstacles(0);
+				}
 			}
 
 			ProcessInput();
@@ -111,6 +112,16 @@ namespace NeuralCreatures {
 				if (Bounds.Contains(Origin(mouse))) {
 					Obstacles.Clear();
 				}
+			}
+		}
+
+		public void AddFood (int style) {
+			switch (style) {
+				case 0:
+					for (int i = 0; i < FoodCount; ++i) {
+						Food.Add(new Food(Bounds));
+					}
+					break;
 			}
 		}
 
@@ -198,7 +209,7 @@ namespace NeuralCreatures {
 
 			batch.DrawString(Font, controls, new Vector2(10, 250), Color.DarkSlateGray);
 
-			batch.DrawString(Font, Creatures[selectedCreature].ToString(), new Vector2(10, 550), Color.Red);
+			batch.DrawString(Font, Creatures[selectedCreature].ToString(), new Vector2(10, 550), Color.DarkRed);
 
 			DrawGraph(batch, width, height);
 

@@ -20,6 +20,7 @@ namespace NeuralCreatures {
 			graphics = new GraphicsDeviceManager(this);
 			graphics.PreferredBackBufferWidth = 1152;
 			graphics.PreferredBackBufferHeight = 864;
+
 			this.Window.AllowUserResizing = true;
 			Content.RootDirectory = "Content";
 			this.IsMouseVisible = true;
@@ -79,7 +80,7 @@ namespace NeuralCreatures {
 		/// </summary>
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Draw (GameTime gameTime) {
-			GraphicsDevice.Clear(Color.CornflowerBlue);
+			GraphicsDevice.Clear(Color.SteelBlue);
 
 			world.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds,
 					   graphics.GraphicsDevice.PresentationParameters.BackBufferWidth,

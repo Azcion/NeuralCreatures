@@ -17,7 +17,7 @@ namespace NeuralCreatures {
 		}
 
 		public void Draw (SpriteBatch batch, Texture2D texture) {
-			batch.Draw(texture, Position - origin, Color.Green);
+			batch.Draw(texture, Position - origin, Color.DarkSeaGreen);
 		}
 	}
 }
