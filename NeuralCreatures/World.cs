@@ -36,7 +36,6 @@ namespace NeuralCreatures {
 		public List<Obstacle> Obstacles;
 
 		private double[] graphValue;
-		private int selectedCreature;
 
 		public World (ContentManager content, Rectangle bounds, int width, int height) {
 			TxCreature = content.Load<Texture2D>("Butterfly");
@@ -140,14 +139,6 @@ namespace NeuralCreatures {
 			}
 		}
 
-		public void CycleCreatures () {
-			if (selectedCreature == CreatureCount - 1) {
-				selectedCreature = 0;
-			} else {
-				++selectedCreature;
-			}
-		}
-
 		public void Draw (SpriteBatch batch, double elapsedTime, int width, int height) {
 			if (DoDrawScene) {
 				batch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
@@ -163,8 +154,6 @@ namespace NeuralCreatures {
 				foreach (Creature c in Creatures) {
 					c.Draw(batch, Ticks);
 				}
-
-				//Creatures[selectedCreature].Draw(batch, Color.Red, Ticks);
 
 				Shapes.DrawLine(batch, new Vector2(Bounds.Left - 100, Bounds.Top - 100),
 									   new Vector2(Bounds.Right + 100, Bounds.Top - 100),
@@ -192,6 +181,7 @@ namespace NeuralCreatures {
 										+ "Mutations:  {5}",
 										GA.Generation, Ticks, Deaths, GA.ElitismChance,
 										GA.CrossOverChance, GA.TotalMutations);
+
 			batch.DrawString(Font, stats, new Vector2(10, 10), Color.Black);
 
 			try {
@@ -207,14 +197,12 @@ namespace NeuralCreatures {
 					+ " R      - reset view\n"
 					+ " T      - toggle vsync\n"
 					+ " B      - toggle scene\n"
+					+ " G      - toggle graph\n"
 					+ " O      - spawn obstacles\n"
 					+ " LMB    - place obstacle\n"
-					+ " RMB    - clear obstacles\n"
-					+ " Tab    - cycle creatures";
+					+ " RMB    - clear obstacles\n";
 
-			batch.DrawString(Font, controls, new Vector2(10, 250), Color.DarkSlateGray);
-
-			//batch.DrawString(Font, Creatures[selectedCreature].ToString(), new Vector2(10, 550), Color.DarkRed);
+			batch.DrawString(Font, controls, new Vector2(10, 250), Color.LightGray);
 
 			if (DoDrawGraph) {
 				DrawGraph(batch, width, height);

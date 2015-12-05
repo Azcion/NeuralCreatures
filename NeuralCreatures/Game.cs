@@ -134,11 +134,6 @@ namespace NeuralCreatures {
 				world.AddObstacles(0);
 			}
 
-			// Cycle creatures
-			if (currentKS.IsKeyUp(Keys.Tab) && lastKS.IsKeyDown(Keys.Tab)) {
-				world.CycleCreatures();
-			}
-
 			lastKS = currentKS;
 		}
 	}
