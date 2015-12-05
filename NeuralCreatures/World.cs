@@ -39,7 +39,7 @@ namespace NeuralCreatures {
 
 		public World (ContentManager content, Rectangle bounds, int width, int height) {
 			Bounds = bounds;
-			TxCreature = content.Load<Texture2D>("Bug");
+			TxCreature = content.Load<Texture2D>("Butterfly");
 			TxPoint = content.Load<Texture2D>("Point");
 			TxFood = content.Load<Texture2D>("Food");
 			Font = content.Load<SpriteFont>("Font");
