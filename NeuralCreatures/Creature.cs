@@ -21,8 +21,18 @@ namespace NeuralCreatures {
 		public double Fitness;
 		public double ParentChance;
 
+		protected Texture2D _texture;
+
+		public Texture2D Texture {
+			get { return _texture; }
+			set {
+				_texture = value;
+				stripWidth = value.Width / value.Height;
+				origin = new Vector2(value.Height / 2, value.Height / 2);
+			}
+		}
+
 		private Vector2 origin;
-		private Texture2D texture;
 		private int stripWidth;
 
 		public Creature (Rectangle bounds, Texture2D texture, Color tint) {
@@ -32,14 +42,11 @@ namespace NeuralCreatures {
 								   Rand.Next(Bounds.Top, Bounds.Bottom));
 			Tint = tint;
 
-			stripWidth = texture.Width / texture.Height;
 			Angle = Rand.Next(0, 360);
 			Frame = Rand.Next(0, stripWidth);
 			Life = 100;
 			
-			this.texture = texture;
-			
-			origin = new Vector2(texture.Height / 2, texture.Height / 2);
+			Texture = texture;
 		}
 
 		public void Reset () {
@@ -89,7 +96,7 @@ namespace NeuralCreatures {
 										   Rand.Next(Bounds.Top, Bounds.Bottom));
 			}
 
-			Life -= .05;
+			Life -= .075;
 
 			if (centerDistanceFood < centerDistanceObstacle) {
 				if (closestFoodLeft > closestFoodRight) {
@@ -198,7 +205,7 @@ namespace NeuralCreatures {
 		}
 
 		public Texture2D GetTexture () {
-			return texture;
+			return Texture;
 		}
 
 		public void Draw (SpriteBatch batch, Color color, int ticks) {
@@ -214,10 +221,10 @@ namespace NeuralCreatures {
 				}
 			}
 
-			Rectangle sourceRect = new Rectangle(Frame * texture.Height, 0, texture.Height, texture.Height);
+			Rectangle sourceRect = new Rectangle(Frame * Texture.Height, 0, Texture.Height, Texture.Height);
 			Rectangle destinRect = new Rectangle((int) Position.X, (int) Position.Y, 64 + 8 * Age, 64 + 8 * Age);
 
-			batch.Draw(texture, destinRect, sourceRect, color, (float) (Angle * MathHelper.Pi / 180),
+			batch.Draw(Texture, destinRect, sourceRect, color, (float) (Angle * MathHelper.Pi / 180),
 				       origin, SpriteEffects.None, 0f);
 		}
 
