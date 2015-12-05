@@ -22,7 +22,8 @@ namespace NeuralCreatures {
 		public GeneticAlgorithm GA;
 		public int Deaths;
 		public int TotalDeaths;
-		public bool DoDraw;
+		public bool DoDrawScene;
+		public bool DoDrawGraph;
 		public FrameCounter Fps;
 
 		public int CreatureCount = 100;
@@ -38,18 +39,19 @@ namespace NeuralCreatures {
 		private int selectedCreature;
 
 		public World (ContentManager content, Rectangle bounds, int width, int height) {
-			Bounds = bounds;
 			TxCreature = content.Load<Texture2D>("Butterfly");
 			TxPoint = content.Load<Texture2D>("Point");
 			TxFood = content.Load<Texture2D>("Food");
 			Font = content.Load<SpriteFont>("Font");
+
+			Bounds = bounds;
 			Shapes = new BasicShapes();
 			Fps = new FrameCounter();
 
 			Creatures = new List<Creature>();
 
 			for (int i = 0; i < CreatureCount; ++i) {
-				Creatures.Add(new Creature(bounds));
+				Creatures.Add(new Creature(bounds, TxCreature, Color.White));
 			}
 
 			Food = new List<Food>();
@@ -60,8 +62,9 @@ namespace NeuralCreatures {
 
 			Camera = new Camera(new Viewport(0, 0, width, height), width + width / 4, height);
 			GA = new GeneticAlgorithm(75, 1);
-			graphValue = new double[32000];
-			DoDraw = true;
+			graphValue = new double[30000];
+			DoDrawScene = true;
+			DoDrawGraph = true;
 		}
 
 		public void Update () {
@@ -146,7 +149,7 @@ namespace NeuralCreatures {
 		}
 
 		public void Draw (SpriteBatch batch, double elapsedTime, int width, int height) {
-			if (DoDraw) {
+			if (DoDrawScene) {
 				batch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, null, null, null, null, Camera.Transform);
 
 				foreach (Obstacle o in Obstacles) {
@@ -158,7 +161,7 @@ namespace NeuralCreatures {
 				}
 
 				foreach (Creature c in Creatures) {
-					c.Draw(batch, TxCreature, Color.White);
+					c.Draw(batch, Ticks);
 				}
 
 				//Creatures[selectedCreature].Draw(batch, Color.Red, Ticks);
@@ -213,7 +216,9 @@ namespace NeuralCreatures {
 
 			//batch.DrawString(Font, Creatures[selectedCreature].ToString(), new Vector2(10, 550), Color.DarkRed);
 
-			DrawGraph(batch, width, height);
+			if (DoDrawGraph) {
+				DrawGraph(batch, width, height);
+			}
 
 			batch.End();
 		}

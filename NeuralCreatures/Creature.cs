@@ -14,6 +14,7 @@ namespace NeuralCreatures {
 		public NeuralNetwork Brain;
 		public int Frame;
 		public Rectangle Bounds;
+		public Color Tint;
 
 		public bool Dead;
 		public double Life;
@@ -21,17 +22,24 @@ namespace NeuralCreatures {
 		public double ParentChance;
 
 		private Vector2 origin;
+		private Texture2D texture;
+		private int stripWidth;
 
-		public Creature (Rectangle bounds) {
+		public Creature (Rectangle bounds, Texture2D texture, Color tint) {
+			Brain = new NeuralNetwork(0, 4, 4, 3);
 			Bounds = bounds;
 			Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
 								   Rand.Next(Bounds.Top, Bounds.Bottom));
-			Angle = Rand.Next(0, 360);
-			Brain = new NeuralNetwork(0, 4, 4, 3);
-			Frame = Rand.Next(0, 8);
+			Tint = tint;
 
+			stripWidth = texture.Width / texture.Height;
+			Angle = Rand.Next(0, 360);
+			Frame = Rand.Next(0, stripWidth);
 			Life = 100;
-			origin = new Vector2(16, 16);
+			
+			this.texture = texture;
+			
+			origin = new Vector2(texture.Height / 2, texture.Height / 2);
 		}
 
 		public void Reset () {
@@ -57,12 +65,6 @@ namespace NeuralCreatures {
 				return;
 			} else if (Dead) {
 				return;
-			}
-
-			// Animation
-			++Frame;
-			if (Frame > 7) {
-				Frame = 0;
 			}
 
 			double[] input = new double[4];
@@ -161,7 +163,7 @@ namespace NeuralCreatures {
 
 		private Food GetClosestFood (List<Food> food, Vector2 start) {
 			Food closestFood = new Food(Bounds);
-			double closest = 320000;
+			double closest = 30000;
 
 			foreach (Food f in food) {
 				double dist = GetDistance(start, f.Position);
@@ -176,7 +178,7 @@ namespace NeuralCreatures {
 
 		private Obstacle GetClosestObstacle (List<Obstacle> obstacles, Vector2 start) {
 			Obstacle closestObstacle = new Obstacle(Bounds);
-			double closest = 320000;
+			double closest = 30000;
 
 			foreach (Obstacle o in obstacles) {
 				double dist = GetDistance(start, o.Position);
@@ -195,12 +197,24 @@ namespace NeuralCreatures {
 			return Math.Sqrt(dist.X * dist.X + dist.Y * dist.Y);
 		}
 
-		public void Draw (SpriteBatch batch, Texture2D texture, Color color) {
+		public Texture2D GetTexture () {
+			return texture;
+		}
+
+		public void Draw (SpriteBatch batch, Color color, int ticks) {
 			if (Life <= 0) {
 				return;
 			}
 
-			Rectangle sourceRect = new Rectangle(Frame * 32, 0, 32, 32);
+			// Animation
+			if (ticks % 5 == 0) {
+				++Frame;
+				if (Frame > stripWidth - 1) {
+					Frame = 0;
+				}
+			}
+
+			Rectangle sourceRect = new Rectangle(Frame * texture.Height, 0, texture.Height, texture.Height);
 			Rectangle destinRect = new Rectangle((int) Position.X, (int) Position.Y, 64 + 8 * Age, 64 + 8 * Age);
 
 			batch.Draw(texture, destinRect, sourceRect, color, (float) (Angle * MathHelper.Pi / 180),
@@ -213,6 +227,10 @@ namespace NeuralCreatures {
 								+ "Fitness: {2}\n"
 								+ "Parent: {3}%",
 								Dead, (float) Life, Fitness, (float) ParentChance);
+		}
+
+		public void Draw (SpriteBatch batch, int ticks) {
+			Draw(batch, Tint, ticks);
 		}
 	}
 }

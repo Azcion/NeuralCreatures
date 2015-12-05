@@ -14,7 +14,7 @@ namespace NeuralCreatures {
 
 		World world;
 
-		KeyboardState lastKeyState;
+		KeyboardState lastKS;
 
 		public Game () {
 			graphics = new GraphicsDeviceManager(this);
@@ -94,50 +94,52 @@ namespace NeuralCreatures {
 				return;
 			}
 
-			// Allows the game to exit
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed) {
-				this.Exit();
-			}
+			KeyboardState currentKS = Keyboard.GetState();
 
 			// Exit game
-			if (Keyboard.GetState().IsKeyUp(Keys.Escape) && lastKeyState.IsKeyDown(Keys.Escape)) {
+			if (currentKS.IsKeyUp(Keys.Escape) && lastKS.IsKeyDown(Keys.Escape)) {
 				this.Exit();
 			}
 
 			// Dump weights
-			if (Keyboard.GetState().IsKeyUp(Keys.RightControl) && lastKeyState.IsKeyDown(Keys.RightControl)) {
+			if (currentKS.IsKeyUp(Keys.RightControl) && lastKS.IsKeyDown(Keys.RightControl)) {
 				world.Dump();
 			}
 
 			// Read weights
-			if (Keyboard.GetState().IsKeyDown(Keys.RightShift) && Keyboard.GetState().IsKeyDown(Keys.Enter)
-				&& lastKeyState.IsKeyUp(Keys.Enter)) {
+			if (currentKS.IsKeyDown(Keys.RightShift) && currentKS.IsKeyDown(Keys.Enter)
+				&& lastKS.IsKeyUp(Keys.Enter)) {
 				world.Read();
 			}
 
 			// Toggle vsync
-			if (Keyboard.GetState().IsKeyUp(Keys.T) && lastKeyState.IsKeyDown(Keys.T)) {
+			if (currentKS.IsKeyUp(Keys.T) && lastKS.IsKeyDown(Keys.T)) {
 				IsFixedTimeStep = !IsFixedTimeStep;
 				graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
 				graphics.ApplyChanges();
 			}
 
 			// Toggle scene
-			if (Keyboard.GetState().IsKeyUp(Keys.B) && lastKeyState.IsKeyDown(Keys.B)) {
-				world.DoDraw = !world.DoDraw;
+			if (currentKS.IsKeyUp(Keys.B) && lastKS.IsKeyDown(Keys.B)) {
+				world.DoDrawScene = !world.DoDrawScene;
+			}
+
+			// Toggle graph
+			if (currentKS.IsKeyUp(Keys.G) && lastKS.IsKeyDown(Keys.G)) {
+				world.DoDrawGraph = !world.DoDrawGraph;
 			}
 
 			// Add random obstacles
-			if (Keyboard.GetState().IsKeyUp(Keys.O) && lastKeyState.IsKeyDown(Keys.O)) {
+			if (currentKS.IsKeyUp(Keys.O) && lastKS.IsKeyDown(Keys.O)) {
 				world.AddObstacles(0);
 			}
 
 			// Cycle creatures
-			if (Keyboard.GetState().IsKeyUp(Keys.Tab) && lastKeyState.IsKeyDown(Keys.Tab)) {
+			if (currentKS.IsKeyUp(Keys.Tab) && lastKS.IsKeyDown(Keys.Tab)) {
 				world.CycleCreatures();
 			}
 
-			lastKeyState = Keyboard.GetState();
+			lastKS = currentKS;
 		}
 	}
 }

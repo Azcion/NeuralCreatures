@@ -115,7 +115,7 @@ namespace NeuralCreatures {
 					childWeights[j] = parentBWeights[j];
 				}
 
-				Creature child = new Creature(bounds);
+				Creature child = new Creature(bounds, parentA.GetTexture(), parentA.Tint);
 				child.Position = new Vector2(parentA.Position.X - 10, parentA.Position.Y - 10);
 				child.Brain.SetWeights(childWeights);
 				NextGeneration.Add(child);
@@ -126,6 +126,7 @@ namespace NeuralCreatures {
 			foreach (Creature c in NextGeneration) {
 				if (Rand.Next(0, 100) < MutationChance) {
 					++TotalMutations;
+					c.Tint = new Color(Rand.Next(0, 255), Rand.Next(0, 255), Rand.Next(0, 255));
 					int MutationPoint = Rand.Next(0, c.Brain.GetDendriteCount());
 					double[] weights = c.Brain.GetWeights();
 					weights[MutationPoint] = Rand.NextDouble();
