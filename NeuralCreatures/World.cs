@@ -69,6 +69,8 @@ namespace NeuralCreatures {
 
 			Deaths = 0;
 
+			Creatures = Creatures.OrderByDescending(c => c.Age).ToList();
+
 			foreach (Creature c in Creatures) {
 				c.Update(Food, Obstacles);
 				if (c.Life <= 0) {

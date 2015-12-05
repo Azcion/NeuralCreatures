@@ -23,8 +23,6 @@ namespace NeuralCreatures {
 		private Vector2 origin;
 
 		public Creature (Rectangle bounds) {
-			Age = 0;
-
 			Bounds = bounds;
 			Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
 								   Rand.Next(Bounds.Top, Bounds.Bottom));
@@ -32,7 +30,6 @@ namespace NeuralCreatures {
 			Brain = new NeuralNetwork(0, 4, 4, 3);
 			Frame = Rand.Next(0, 8);
 
-			Dead = false;
 			Life = 100;
 			origin = new Vector2(16, 16);
 		}
