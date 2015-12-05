@@ -85,11 +85,15 @@ namespace NeuralCreatures {
 			if (Ticks >= 1500 || Deaths == Creatures.Count) {
 				TotalDeaths += Deaths;
 				Ticks = 0;
-				graphValue[GA.Generation] = GA.Evolve(Creatures, Bounds);
-
+				if (GA.Generation < graphValue.Length) {
+					graphValue[GA.Generation] = GA.Evolve(Creatures, Bounds);
+				}
 				if (GA.Generation % 10 == 0) {
 					Obstacles.Clear();
 					AddObstacles(0);
+					if (GA.Generation == 1000) {
+						DoDrawGraph = false;
+					}
 				}
 			}
 
