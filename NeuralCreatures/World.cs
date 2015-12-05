@@ -161,7 +161,7 @@ namespace NeuralCreatures {
 					c.Draw(batch, TxCreature, Color.White);
 				}
 
-				Creatures[selectedCreature].Draw(batch, TxCreature, Color.Red);
+				//Creatures[selectedCreature].Draw(batch, Color.Red, Ticks);
 
 				Shapes.DrawLine(batch, new Vector2(Bounds.Left - 100, Bounds.Top - 100),
 									   new Vector2(Bounds.Right + 100, Bounds.Top - 100),
@@ -211,7 +211,7 @@ namespace NeuralCreatures {
 
 			batch.DrawString(Font, controls, new Vector2(10, 250), Color.DarkSlateGray);
 
-			batch.DrawString(Font, Creatures[selectedCreature].ToString(), new Vector2(10, 550), Color.DarkRed);
+			//batch.DrawString(Font, Creatures[selectedCreature].ToString(), new Vector2(10, 550), Color.DarkRed);
 
 			DrawGraph(batch, width, height);
 
