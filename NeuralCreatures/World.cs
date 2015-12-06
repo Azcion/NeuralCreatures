@@ -278,7 +278,7 @@ namespace NeuralCreatures {
 
 					string[] line = lines[i].Split();
 
-					for (int j = 0; j < c.Brain.GetDendriteCount(); ++j) {
+					for (int j = 0; j < c.Brain.DendriteCount; ++j) {
 						weights[j] = double.Parse(line[j]);
 					}
 					

@@ -7,6 +7,7 @@ namespace NeuralCreatures {
 		public static Random Rand = new Random(Guid.NewGuid().GetHashCode());
 
 		public double Fitness;
+		public int DendriteCount;
 
 		public struct Dendrite {
 			public double Weight;
@@ -48,6 +49,8 @@ namespace NeuralCreatures {
 			Fitness = 0;
 			Brain.LearningRate = learningRate;
 			Brain.Layers = new Layer[Brain.LayerCount];
+
+			DendriteCount = GetDendriteCount();
 
 			for (int i = 0; i < Brain.LayerCount; ++i) {
 				Brain.Layers[i].NeuronCount = (int) layerArr[i];
@@ -120,7 +123,8 @@ namespace NeuralCreatures {
 		}
 
 		public double[] GetWeights () {
-			double[] weights = new double[GetDendriteCount()];
+			DendriteCount = GetDendriteCount();
+			double[] weights = new double[DendriteCount];
 			int dendriteCount = 0;
 
 			for (int i = 0; i < Brain.LayerCount; ++i) {
@@ -152,7 +156,7 @@ namespace NeuralCreatures {
 			}
 		}
 
-		public int GetDendriteCount () {
+		private int GetDendriteCount () {
 			int dendriteCount = 0;
 
 			for (int i = 0; i < Brain.LayerCount; ++i) {

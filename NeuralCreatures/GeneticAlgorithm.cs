@@ -127,7 +127,7 @@ namespace NeuralCreatures {
 				if (Rand.Next(0, 100) < MutationChance) {
 					++TotalMutations;
 					c.Tint = new Color(Rand.Next(0, 255), Rand.Next(0, 255), Rand.Next(0, 255));
-					int MutationPoint = Rand.Next(0, c.Brain.GetDendriteCount());
+					int MutationPoint = Rand.Next(0, c.Brain.DendriteCount);
 					double[] weights = c.Brain.GetWeights();
 					weights[MutationPoint] = Rand.NextDouble();
 					c.Brain.SetWeights(weights);

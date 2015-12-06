@@ -74,8 +74,6 @@ namespace NeuralCreatures {
 				return;
 			}
 
-			
-
 			Vector2 origin = new Vector2(32, 32);
 			Vector2 leftSensor = ExtendedPoint(Position, Angle - 135, 100);
 			Vector2 rightSensor = ExtendedPoint(Position, Angle - 45, 100);
