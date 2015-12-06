@@ -74,7 +74,7 @@ namespace NeuralCreatures {
 				return;
 			}
 
-			double[] input = new double[4];
+			
 
 			Vector2 origin = new Vector2(32, 32);
 			Vector2 leftSensor = ExtendedPoint(Position, Angle - 135, 100);
@@ -98,6 +98,9 @@ namespace NeuralCreatures {
 
 			Life -= .075;
 
+			// {food left, food right, obstacle left, obstacle right}
+			double[] input = new double[4];
+
 			if (centerDistanceFood < centerDistanceObstacle) {
 				if (closestFoodLeft > closestFoodRight) {
 					input[0] = 1;
@@ -116,8 +119,13 @@ namespace NeuralCreatures {
 				}
 			}
 
+			// {rotate left, rotate right, forward}
 			double[] output = Brain.Run(input);
 
+			ProcessOutput(output, obstacles);
+		}
+
+		private void ProcessOutput (double[] output, List<Obstacle> obstacles) {
 			if (output[0] > output[1]) {
 				Angle += output[0] * 4;
 			} else {
@@ -129,7 +137,7 @@ namespace NeuralCreatures {
 			Vector2 oldPos = Position;
 			Position.X += (float) (Math.Cos(radians) * speed);
 			Position.Y += (float) (Math.Sin(radians) * speed);
-			double closestObstacleDist = 320000;
+			double closestObstacleDist = 30000;
 
 			foreach (Obstacle o in obstacles) {
 				double dist = GetDistance(o.Position - origin, Position - origin);
