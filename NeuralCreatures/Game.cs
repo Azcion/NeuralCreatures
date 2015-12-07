@@ -1,87 +1,88 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
 
 namespace NeuralCreatures {
+
 	/// <summary>
-	/// This is the main type for your game
+	///     This is the main type for your game
 	/// </summary>
 	public class Game : Microsoft.Xna.Framework.Game {
 
-		GraphicsDeviceManager graphics;
-		SpriteBatch spriteBatch;
+		private KeyboardState _lastKeyState;
+		private SpriteBatch _spriteBatch;
+		private World _world;
 
-		World world;
-
-		KeyboardState lastKS;
+		protected GraphicsDeviceManager Graphics;
 
 		public Game () {
-			graphics = new GraphicsDeviceManager(this);
-			graphics.PreferredBackBufferWidth = 1152;
-			graphics.PreferredBackBufferHeight = 864;
+			Graphics = new GraphicsDeviceManager(this) {
+				PreferredBackBufferWidth = 1152,
+				PreferredBackBufferHeight = 864
+			};
 
-			this.Window.AllowUserResizing = true;
+			Window.AllowUserResizing = true;
 			Content.RootDirectory = "Content";
-			this.IsMouseVisible = true;
+			IsMouseVisible = true;
 			InactiveSleepTime = new TimeSpan(0);
-			this.IsFixedTimeStep = false;
-			graphics.SynchronizeWithVerticalRetrace = false;
+			IsFixedTimeStep = false;
+			Graphics.SynchronizeWithVerticalRetrace = false;
 		}
 
 		/// <summary>
-		/// Allows the game to perform any initialization it needs to before starting to run.
-		/// This is where it can query for any required services and load any non-graphic
-		/// related content.  Calling base.Initialize will enumerate through any components
-		/// and initialize them as well.
+		///     Allows the game to perform any initialization it needs to before starting to run.
+		///     This is where it can query for any required services and load any non-graphic
+		///     related content.  Calling base.Initialize will enumerate through any components
+		///     and initialize them as well.
 		/// </summary>
 		protected override void Initialize () {
-			world = new World(Content, new Rectangle(-2000, -2000, 4000, 4000),
-							  graphics.GraphicsDevice.PresentationParameters.BackBufferWidth,
-							  graphics.GraphicsDevice.PresentationParameters.BackBufferHeight);
+			_world = new World(Content, new Rectangle(-2000, -2000, 4000, 4000),
+			                   Graphics.GraphicsDevice.PresentationParameters.BackBufferWidth,
+			                   Graphics.GraphicsDevice.PresentationParameters.BackBufferHeight);
 
 			base.Initialize();
 		}
 
 		/// <summary>
-		/// LoadContent will be called once per game and is the place to load
-		/// all of your content.
+		///     LoadContent will be called once per game and is the place to load
+		///     all of your content.
 		/// </summary>
 		protected override void LoadContent () {
 			// Create a new SpriteBatch, which can be used to draw textures.
-			spriteBatch = new SpriteBatch(GraphicsDevice);
+			_spriteBatch = new SpriteBatch(GraphicsDevice);
 		}
 
 		/// <summary>
-		/// UnloadContent will be called once per game and is the place to unload
-		/// all content.
+		///     UnloadContent will be called once per game and is the place to unload
+		///     all content.
 		/// </summary>
 		protected override void UnloadContent () {
 		}
 
 		/// <summary>
-		/// Allows the game to run logic such as updating the world,
-		/// checking for collisions, gathering input, and playing audio.
+		///     Allows the game to run logic such as updating the _world,
+		///     checking for collisions, gathering input, and playing audio.
 		/// </summary>
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Update (GameTime gameTime) {
 			ProcessInput();
 
-			world.Update();
+			_world.Update();
 
 			base.Update(gameTime);
 		}
 
 		/// <summary>
-		/// This is called when the game should draw itself.
+		///     This is called when the game should draw itself.
 		/// </summary>
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Draw (GameTime gameTime) {
 			GraphicsDevice.Clear(Color.SteelBlue);
 
-			world.Draw(spriteBatch, gameTime.ElapsedGameTime.TotalSeconds,
-					   graphics.GraphicsDevice.PresentationParameters.BackBufferWidth,
-					   graphics.GraphicsDevice.PresentationParameters.BackBufferHeight);
+			_world.Draw(_spriteBatch, gameTime.ElapsedGameTime.TotalSeconds,
+			            Graphics.GraphicsDevice.PresentationParameters.BackBufferWidth,
+			            Graphics.GraphicsDevice.PresentationParameters.BackBufferHeight);
 
 			base.Draw(gameTime);
 		}
@@ -91,47 +92,49 @@ namespace NeuralCreatures {
 				return;
 			}
 
-			KeyboardState currentKS = Keyboard.GetState();
+			KeyboardState currentKeyState = Keyboard.GetState();
 
 			// Exit game
-			if (currentKS.IsKeyUp(Keys.Escape) && lastKS.IsKeyDown(Keys.Escape)) {
-				this.Exit();
+			if (currentKeyState.IsKeyUp(Keys.Escape) && _lastKeyState.IsKeyDown(Keys.Escape)) {
+				Exit();
 			}
 
 			// Dump weights
-			if (currentKS.IsKeyUp(Keys.RightControl) && lastKS.IsKeyDown(Keys.RightControl)) {
-				world.Dump();
+			if (currentKeyState.IsKeyUp(Keys.RightControl) && _lastKeyState.IsKeyDown(Keys.RightControl)) {
+				_world.Export();
 			}
 
 			// Read weights
-			if (currentKS.IsKeyDown(Keys.RightShift) && currentKS.IsKeyDown(Keys.Enter)
-				&& lastKS.IsKeyUp(Keys.Enter)) {
-				world.Read();
+			if (currentKeyState.IsKeyDown(Keys.RightShift) && currentKeyState.IsKeyDown(Keys.Enter)
+			    && _lastKeyState.IsKeyUp(Keys.Enter)) {
+				_world.Import();
 			}
 
 			// Toggle vsync
-			if (currentKS.IsKeyUp(Keys.T) && lastKS.IsKeyDown(Keys.T)) {
+			if (currentKeyState.IsKeyUp(Keys.T) && _lastKeyState.IsKeyDown(Keys.T)) {
 				IsFixedTimeStep = !IsFixedTimeStep;
-				graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
-				graphics.ApplyChanges();
+				Graphics.SynchronizeWithVerticalRetrace = !Graphics.SynchronizeWithVerticalRetrace;
+				Graphics.ApplyChanges();
 			}
 
 			// Toggle scene
-			if (currentKS.IsKeyUp(Keys.B) && lastKS.IsKeyDown(Keys.B)) {
-				world.DoDrawScene = !world.DoDrawScene;
+			if (currentKeyState.IsKeyUp(Keys.B) && _lastKeyState.IsKeyDown(Keys.B)) {
+				_world.DoDrawScene = !_world.DoDrawScene;
 			}
 
 			// Toggle graph
-			if (currentKS.IsKeyUp(Keys.G) && lastKS.IsKeyDown(Keys.G)) {
-				world.DoDrawGraph = !world.DoDrawGraph;
+			if (currentKeyState.IsKeyUp(Keys.G) && _lastKeyState.IsKeyDown(Keys.G)) {
+				_world.DoDrawGraph = !_world.DoDrawGraph;
 			}
 
 			// Add random obstacles
-			if (currentKS.IsKeyUp(Keys.O) && lastKS.IsKeyDown(Keys.O)) {
-				world.AddObstacles(0);
+			if (currentKeyState.IsKeyUp(Keys.O) && _lastKeyState.IsKeyDown(Keys.O)) {
+				_world.AddObstacles(0);
 			}
 
-			lastKS = currentKS;
+			_lastKeyState = currentKeyState;
 		}
+
 	}
+
 }

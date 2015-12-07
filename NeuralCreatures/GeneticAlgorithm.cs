@@ -1,7 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using static NeuralCreatures.NeuralNetwork;
 
 namespace NeuralCreatures {
@@ -9,12 +9,14 @@ namespace NeuralCreatures {
 	public class GeneticAlgorithm {
 
 		public int Generation;
-		public double ElitismChance;
-		public double CrossOverChance;
-		public double MutationChance;
+		public int TotalMutations;
+
 		public double AverageFitness;
 		public double HighestFitness;
-		public int TotalMutations;
+
+		public double CrossOverChance;
+		public double ElitismChance;
+		public double MutationChance;
 
 		public List<Creature> NextGeneration;
 
@@ -68,7 +70,7 @@ namespace NeuralCreatures {
 		}
 
 		private void Elitism (List<Creature> creatures) {
-			creatures = creatures.OrderByDescending(Creature => Creature.Fitness).ToList();
+			creatures = creatures.OrderByDescending(c => c.Fitness).ToList();
 			int elitesCount = (int) (creatures.Count * ElitismChance / 100);
 
 			for (int i = 0; i < elitesCount; ++i) {
@@ -77,7 +79,7 @@ namespace NeuralCreatures {
 		}
 
 		private Creature Selection () {
-			NextGeneration = NextGeneration.OrderBy(Creature => Guid.NewGuid()).ToList();
+			NextGeneration = NextGeneration.OrderBy(c => Guid.NewGuid()).ToList();
 			int parentThreshold = Rand.Next(0, 100);
 			Creature bestC = NextGeneration[0];
 
@@ -115,8 +117,10 @@ namespace NeuralCreatures {
 					childWeights[j] = parentBWeights[j];
 				}
 
-				Creature child = new Creature(bounds, parentA.Texture, parentA.Tint);
-				child.Position = new Vector2(parentA.Position.X - 10, parentA.Position.Y - 10);
+				Creature child = new Creature(bounds, parentA.Texture, parentA.Tint) {
+					Position = new Vector2(parentA.Position.X - 10, parentA.Position.Y - 10)
+				};
+
 				child.Brain.SetWeights(childWeights);
 				NextGeneration.Add(child);
 			}
@@ -124,14 +128,17 @@ namespace NeuralCreatures {
 
 		private void Mutate () {
 			foreach (Creature c in NextGeneration) {
-				if (Rand.Next(0, 100) < MutationChance) {
-					++TotalMutations;
-					c.Tint = new Color(Rand.Next(0, 255), Rand.Next(0, 255), Rand.Next(0, 255));
-					int MutationPoint = Rand.Next(0, c.Brain.DendriteCount);
-					double[] weights = c.Brain.GetWeights();
-					weights[MutationPoint] = Rand.NextDouble();
-					c.Brain.SetWeights(weights);
+				if (!(Rand.Next(0, 100) < MutationChance)) {
+					continue;
 				}
+
+				int mutationPoint = Rand.Next(0, c.Brain.DendriteCount);
+				double[] weights = c.Brain.GetWeights();
+				weights[mutationPoint] = Rand.NextDouble();
+
+				c.Brain.SetWeights(weights);
+				c.Tint = new Color(Rand.Next(0, 255), Rand.Next(0, 255), Rand.Next(0, 255));
+				++TotalMutations;
 			}
 		}
 
@@ -142,5 +149,7 @@ namespace NeuralCreatures {
 				creatures[i] = c;
 			}
 		}
+
 	}
+
 }

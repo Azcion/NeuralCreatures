@@ -8,28 +8,37 @@ namespace NeuralCreatures {
 
 		public double Fitness;
 		public int DendriteCount;
+		public int NodeCount;
 
 		public struct Dendrite {
+
 			public double Weight;
+
 		}
 
 		public struct Neuron {
+
 			public Dendrite[] Dendrites;
 			public int DendriteCount;
 			public double Bias;
 			public double Value;
 			public double Delta;
+
 		}
 
 		public struct Layer {
+
 			public Neuron[] Neurons;
 			public int NeuronCount;
+
 		}
 
 		public struct Network {
+
 			public Layer[] Layers;
 			public int LayerCount;
 			public double LearningRate;
+
 		}
 
 		public Network Brain;
@@ -50,24 +59,26 @@ namespace NeuralCreatures {
 			Brain.LearningRate = learningRate;
 			Brain.Layers = new Layer[Brain.LayerCount];
 
-			DendriteCount = GetDendriteCount();
-
 			for (int i = 0; i < Brain.LayerCount; ++i) {
 				Brain.Layers[i].NeuronCount = (int) layerArr[i];
 				Brain.Layers[i].Neurons = new Neuron[(int) layerArr[i]];
 
 				for (int j = 0; j < layerArr[i]; ++j) {
-					if (i != 0) {
-						Brain.Layers[i].Neurons[j].Bias = GetRand();
-						Brain.Layers[i].Neurons[j].DendriteCount = (int) layerArr[i - 1];
-						Brain.Layers[i].Neurons[j].Dendrites = new Dendrite[(int) layerArr[i - 1]];
+					if (i == 0) {
+						continue;
+					}
+					Brain.Layers[i].Neurons[j].Bias = GetRand();
+					Brain.Layers[i].Neurons[j].DendriteCount = (int) layerArr[i - 1];
+					Brain.Layers[i].Neurons[j].Dendrites = new Dendrite[(int) layerArr[i - 1]];
 
-						for (int k = 0; k < layerArr[i - 1]; ++k) {
-							Brain.Layers[i].Neurons[j].Dendrites[k].Weight = GetRand();
-						}
+					for (int k = 0; k < layerArr[i - 1]; ++k) {
+						Brain.Layers[i].Neurons[j].Dendrites[k].Weight = GetRand();
 					}
 				}
 			}
+
+			DendriteCount = GetDendriteCount();
+			NodeCount = hidden + outputs;
 		}
 
 		public double[] Run (double[] inputArr) {
@@ -84,7 +95,7 @@ namespace NeuralCreatures {
 
 						for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
 							Brain.Layers[i].Neurons[j].Value += Brain.Layers[i - 1].Neurons[k].Value
-															  * Brain.Layers[i].Neurons[j].Dendrites[k].Weight;
+							                                    * Brain.Layers[i].Neurons[j].Dendrites[k].Weight;
 						}
 						Brain.Layers[i].Neurons[j].Value = BipolarSigmoid(Brain.Layers[i].Neurons[j].Value);
 					}
@@ -101,7 +112,7 @@ namespace NeuralCreatures {
 			return outResult;
 		}
 
-		private double GetRand () {
+		public static double GetRand () {
 			return Rand.NextDouble() * 2 - 1;
 		}
 
@@ -109,31 +120,32 @@ namespace NeuralCreatures {
 			return 1 / (1 + Math.Exp(-x));
 		}
 
-		private void Randomize () {
+		public void Randomize () {
 			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
-					if (i != 0) {
-						Brain.Layers[i].Neurons[j].Bias = GetRand();
-						for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
-							Brain.Layers[i].Neurons[j].Dendrites[k].Weight = GetRand();
-						}
+					if (i == 0) {
+						continue;
+					}
+					Brain.Layers[i].Neurons[j].Bias = GetRand();
+					for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
+						Brain.Layers[i].Neurons[j].Dendrites[k].Weight = GetRand();
 					}
 				}
 			}
 		}
 
 		public double[] GetWeights () {
-			DendriteCount = GetDendriteCount();
 			double[] weights = new double[DendriteCount];
 			int dendriteCount = 0;
 
 			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
-					if (i != 0) {
-						for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
-							weights[dendriteCount] = Brain.Layers[i].Neurons[j].Dendrites[k].Weight;
-							++dendriteCount;
-						}
+					if (i == 0) {
+						continue;
+					}
+					for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
+						weights[dendriteCount] = Brain.Layers[i].Neurons[j].Dendrites[k].Weight;
+						++dendriteCount;
 					}
 				}
 			}
@@ -146,11 +158,12 @@ namespace NeuralCreatures {
 
 			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
-					if (i != 0) {
-						for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
-							Brain.Layers[i].Neurons[j].Dendrites[k].Weight = weights[dendriteCount];
-							++dendriteCount;
-						}
+					if (i == 0) {
+						continue;
+					}
+					for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
+						Brain.Layers[i].Neurons[j].Dendrites[k].Weight = weights[dendriteCount];
+						++dendriteCount;
 					}
 				}
 			}
@@ -161,10 +174,11 @@ namespace NeuralCreatures {
 
 			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
-					if (i != 0) {
-						for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
-							++dendriteCount;
-						}
+					if (i == 0) {
+						continue;
+					}
+					for (int k = 0; k < Brain.Layers[i - 1].NeuronCount; ++k) {
+						++dendriteCount;
 					}
 				}
 			}
@@ -172,31 +186,33 @@ namespace NeuralCreatures {
 			return dendriteCount;
 		}
 
-		private double[] GetBias () {
+		public double[] GetBias () {
 			int biasCount = 0;
 			double[] bias = new double[GetBiasCount()];
 
 			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
-					if (i != 0) {
-						bias[biasCount] = Brain.Layers[i].Neurons[j].Bias;
-						++biasCount;
+					if (i == 0) {
+						continue;
 					}
+					bias[biasCount] = Brain.Layers[i].Neurons[j].Bias;
+					++biasCount;
 				}
 			}
 
 			return bias;
 		}
 
-		private void SetBias (double[] bias) {
+		public void SetBias (double[] bias) {
 			int biasCount = 0;
 
 			for (int i = 0; i < Brain.LayerCount; ++i) {
 				for (int j = 0; j < Brain.Layers[i].NeuronCount; ++j) {
-					if (i != 0) {
-						Brain.Layers[i].Neurons[j].Bias = bias[biasCount];
-						++biasCount;
+					if (i == 0) {
+						continue;
 					}
+					Brain.Layers[i].Neurons[j].Bias = bias[biasCount];
+					++biasCount;
 				}
 			}
 		}
@@ -214,5 +230,7 @@ namespace NeuralCreatures {
 
 			return biasCount;
 		}
+
 	}
+
 }

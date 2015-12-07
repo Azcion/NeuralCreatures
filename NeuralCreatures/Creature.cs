@@ -8,59 +8,58 @@ namespace NeuralCreatures {
 
 	public class Creature {
 
-		public int Age;
 		public Vector2 Position;
-		public double Angle;
 		public NeuralNetwork Brain;
-		public int Frame;
 		public Rectangle Bounds;
 		public Color Tint;
 
+		public int Age;
+		public double Angle;
+		public int Frame;
 		public bool Dead;
 		public double Life;
 		public double Fitness;
 		public double ParentChance;
 
-		protected Texture2D _texture;
+		private Texture2D _texture;
+		private Vector2 _origin;
+		private readonly Vector2[,] _edges;
+		private readonly float[] _edgeLengths;
+		private int _stripWidth;
 
 		public Texture2D Texture {
 			get { return _texture; }
 			set {
 				_texture = value;
-				stripWidth = value.Width / value.Height;
-				origin = new Vector2(value.Height / 2, value.Height / 2);
+				_stripWidth = value.Width / value.Height;
+				_origin = new Vector2(value.Height / 2f, value.Height / 2f);
 			}
 		}
-
-		private Vector2 origin;
-		private Vector2[,] edges;
-		private float[] edgeLengths;
-		private int stripWidth;
 
 		public Creature (Rectangle bounds, Texture2D texture, Color tint) {
 			Brain = new NeuralNetwork(0, 4, 4, 3);
 			Bounds = bounds;
 			Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
-								   Rand.Next(Bounds.Top, Bounds.Bottom));
-			
-			edges = new Vector2[4, 2] {
-				{ new Vector2(bounds.Left, bounds.Top), new Vector2(bounds.Right, bounds.Top)},
-				{ new Vector2(bounds.Right, bounds.Top), new Vector2(bounds.Right, bounds.Bottom)},
-				{ new Vector2(bounds.Right, bounds.Bottom), new Vector2(bounds.Left, bounds.Bottom)},
-				{ new Vector2(bounds.Left, bounds.Bottom), new Vector2(bounds.Left, bounds.Top)}
+			                       Rand.Next(Bounds.Top, Bounds.Bottom));
+
+			_edges = new[,] {
+				{new Vector2(bounds.Left, bounds.Top), new Vector2(bounds.Right, bounds.Top)},
+				{new Vector2(bounds.Right, bounds.Top), new Vector2(bounds.Right, bounds.Bottom)},
+				{new Vector2(bounds.Right, bounds.Bottom), new Vector2(bounds.Left, bounds.Bottom)},
+				{new Vector2(bounds.Left, bounds.Bottom), new Vector2(bounds.Left, bounds.Top)}
 			};
 
-			edgeLengths = new float[4] {
-				Vector2.DistanceSquared(edges[0, 0], edges[0, 1]),
-				Vector2.DistanceSquared(edges[1, 0], edges[1, 1]),
-				Vector2.DistanceSquared(edges[2, 0], edges[2, 1]),
-				Vector2.DistanceSquared(edges[3, 0], edges[3, 1])
+			_edgeLengths = new[] {
+				Vector2.DistanceSquared(_edges[0, 0], _edges[0, 1]),
+				Vector2.DistanceSquared(_edges[1, 0], _edges[1, 1]),
+				Vector2.DistanceSquared(_edges[2, 0], _edges[2, 1]),
+				Vector2.DistanceSquared(_edges[3, 0], _edges[3, 1])
 			};
 
 			Angle = Rand.Next(0, 360);
-			Frame = Rand.Next(0, stripWidth);
+			Frame = Rand.Next(0, _stripWidth);
 			Life = 100;
-			
+
 			Texture = texture;
 			Tint = tint;
 		}
@@ -86,11 +85,10 @@ namespace NeuralCreatures {
 			if (!Dead && Life <= 0) {
 				Kill();
 				return;
-			} else if (Dead) {
+			}
+			if (Dead) {
 				return;
 			}
-
-			Vector2 origin = new Vector2(32, 32);
 
 			Vector2 sensorL = ExtendedPoint(Position, Angle - 135, 100);
 			Vector2 sensorR = ExtendedPoint(Position, Angle - 45, 100);
@@ -110,7 +108,7 @@ namespace NeuralCreatures {
 				Life += 30;
 				Fitness += 10;
 				closestFoodItem.Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
-										   Rand.Next(Bounds.Top, Bounds.Bottom));
+				                                       Rand.Next(Bounds.Top, Bounds.Bottom));
 			}
 
 			Life -= .075;
@@ -157,7 +155,7 @@ namespace NeuralCreatures {
 			double closestObstacleDist = 30000;
 
 			foreach (Obstacle o in obstacles) {
-				double dist = Vector2.Distance(o.Position - origin, Position - origin);
+				double dist = Vector2.Distance(o.Position - _origin, Position - _origin);
 				if (dist < closestObstacleDist) {
 					closestObstacleDist = dist;
 				}
@@ -184,7 +182,7 @@ namespace NeuralCreatures {
 			}
 		}
 
-		private Vector2 ExtendedPoint (Vector2 center, double directionAngle, int length) {
+		public static Vector2 ExtendedPoint (Vector2 center, double directionAngle, int length) {
 			float radians = (float) directionAngle * MathHelper.Pi / 180;
 			Vector2 position;
 			position.X = (float) (center.X + Math.Cos(radians) * length);
@@ -234,7 +232,7 @@ namespace NeuralCreatures {
 			float closest = 30000;
 
 			for (int i = 0; i < 4; ++i) {
-				Vector2 projection = ProjectionOnEdge(start, edges[i, 0], edges[i, 1], edgeLengths[i]);
+				Vector2 projection = ProjectionOnEdge(start, _edges[i, 0], _edges[i, 1], _edgeLengths[i]);
 				float dist = Vector2.Distance(start, projection);
 				if (dist < closest) {
 					closest = dist;
@@ -245,12 +243,13 @@ namespace NeuralCreatures {
 			return edgeObst;
 		}
 
-		private Vector2 ProjectionOnEdge (Vector2 start, Vector2 cornerA, Vector2 cornerB, float distanceSquared) {
+		public static Vector2 ProjectionOnEdge (Vector2 start, Vector2 cornerA, Vector2 cornerB, float distanceSquared) {
 			float t = Vector2.Dot(start - cornerA, cornerB - cornerA) / distanceSquared;
 
 			if (t < 0) {
 				return cornerA;
-			} else if (t > 1) {
+			}
+			if (t > 1) {
 				return cornerB;
 			}
 
@@ -265,7 +264,7 @@ namespace NeuralCreatures {
 			// Animation
 			if (ticks % 5 == 0) {
 				++Frame;
-				if (Frame > stripWidth - 1) {
+				if (Frame > _stripWidth - 1) {
 					Frame = 0;
 				}
 			}
@@ -274,19 +273,20 @@ namespace NeuralCreatures {
 			Rectangle destinRect = new Rectangle((int) Position.X, (int) Position.Y, 64 + 8 * Age, 64 + 8 * Age);
 
 			batch.Draw(Texture, destinRect, sourceRect, color, (float) (Angle * MathHelper.Pi / 180),
-				       origin, SpriteEffects.None, 0f);
+			           _origin, SpriteEffects.None, 0f);
 		}
 
 		public override string ToString () {
-			return string.Format("Dead: {0}\n"
-								+ "Life: {1}\n"
-								+ "Fitness: {2}\n"
-								+ "Parent: {3}%",
-								Dead, (float) Life, Fitness, (float) ParentChance);
+			return $"Dead: {Dead}\n"
+			       + $"Life: {(float) Life}\n"
+			       + $"Fitness: {Fitness}\n"
+			       + $"Parent: {(float) ParentChance}%";
 		}
 
 		public void Draw (SpriteBatch batch, int ticks) {
 			Draw(batch, Tint, ticks);
 		}
+
 	}
+
 }

@@ -1,11 +1,11 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace NeuralCreatures {
 
@@ -27,6 +27,8 @@ namespace NeuralCreatures {
 		public bool DoDrawScene;
 		public bool DoDrawGraph;
 
+		public readonly double[] GraphValues;
+
 		public int CreatureCount = 100;
 		public List<Creature> Creatures;
 
@@ -36,7 +38,6 @@ namespace NeuralCreatures {
 		public int ObstacleCount = 100;
 		public List<Obstacle> Obstacles;
 
-		private double[] graphValue;
 
 		public World (ContentManager content, Rectangle bounds, int width, int height) {
 			LoadContent(content);
@@ -59,7 +60,7 @@ namespace NeuralCreatures {
 
 			Camera = new Camera(new Viewport(0, 0, width, height), width + width / 4, height);
 			GA = new GeneticAlgorithm(75, 1);
-			graphValue = new double[30000];
+			GraphValues = new double[30000];
 			DoDrawScene = true;
 			DoDrawGraph = true;
 		}
@@ -90,8 +91,8 @@ namespace NeuralCreatures {
 			if (Ticks >= 1500 || Deaths == Creatures.Count) {
 				TotalDeaths += Deaths;
 				Ticks = 0;
-				if (GA.Generation < graphValue.Length) {
-					graphValue[GA.Generation] = GA.Evolve(Creatures, Bounds);
+				if (GA.Generation < GraphValues.Length) {
+					GraphValues[GA.Generation] = GA.Evolve(Creatures, Bounds);
 				}
 				if (GA.Generation % 10 == 0) {
 					Obstacles.Clear();
@@ -164,32 +165,34 @@ namespace NeuralCreatures {
 					c.Draw(batch, Ticks);
 				}
 
-				Shapes.DrawLine(batch, new Vector2(Bounds.Left - 100, Bounds.Top - 100),
-									   new Vector2(Bounds.Right + 100, Bounds.Top - 100),
-									   Color.Black, TxPoint, 4);
-				Shapes.DrawLine(batch, new Vector2(Bounds.Right + 100, Bounds.Top - 100),
-									   new Vector2(Bounds.Right + 100, Bounds.Bottom + 100),
-									   Color.Black, TxPoint, 4);
-				Shapes.DrawLine(batch, new Vector2(Bounds.Right + 100, Bounds.Bottom + 100),
-									   new Vector2(Bounds.Left - 100, Bounds.Bottom + 100),
-									   Color.Black, TxPoint, 4);
-				Shapes.DrawLine(batch, new Vector2(Bounds.Left - 100, Bounds.Bottom + 100),
-									   new Vector2(Bounds.Left - 100, Bounds.Top - 100),
-									   Color.Black, TxPoint, 4);
+				Shapes.DrawLine(batch,
+				                new Vector2(Bounds.Left - 100, Bounds.Top - 100),
+				                new Vector2(Bounds.Right + 100, Bounds.Top - 100),
+				                Color.Black, TxPoint, 4);
+				Shapes.DrawLine(batch,
+				                new Vector2(Bounds.Right + 100, Bounds.Top - 100),
+				                new Vector2(Bounds.Right + 100, Bounds.Bottom + 100),
+				                Color.Black, TxPoint, 4);
+				Shapes.DrawLine(batch,
+				                new Vector2(Bounds.Right + 100, Bounds.Bottom + 100),
+				                new Vector2(Bounds.Left - 100, Bounds.Bottom + 100),
+				                Color.Black, TxPoint, 4);
+				Shapes.DrawLine(batch,
+				                new Vector2(Bounds.Left - 100, Bounds.Bottom + 100),
+				                new Vector2(Bounds.Left - 100, Bounds.Top - 100),
+				                Color.Black, TxPoint, 4);
 
 				batch.End();
 			}
 
 			batch.Begin();
 
-			string stats = string.Format( "Generation: {0}\n"
-										+ "Tick:       {1}\n"
-										+ "Deaths:     {2}\n"
-										+ "Elitism:    {3}%\n"
-										+ "Crossover:  {4}%\n"
-										+ "Mutations:  {5}",
-										GA.Generation, Ticks, Deaths, GA.ElitismChance,
-										GA.CrossOverChance, GA.TotalMutations);
+			string stats = $"Generation: {GA.Generation}\n"
+			               + $"Tick:       {Ticks}\n"
+			               + $"Deaths:     {Deaths}\n"
+			               + $"Elitism:    {GA.ElitismChance}%\n"
+			               + $"Crossover:  {GA.CrossOverChance}%\n"
+			               + $"Mutations:  {GA.TotalMutations}";
 
 			batch.DrawString(Font, stats, new Vector2(10, 10), Color.Black);
 
@@ -199,17 +202,17 @@ namespace NeuralCreatures {
 			} catch (ArgumentException) {
 			}
 
-			string controls = "Controls:\n"
-					+ " WASD   - pan\n"
-					+ " QE     - rotate\n"
-					+ " scroll - zoom\n"
-					+ " R      - reset view\n"
-					+ " T      - toggle vsync\n"
-					+ " B      - toggle scene\n"
-					+ " G      - toggle graph\n"
-					+ " O      - spawn obstacles\n"
-					+ " LMB    - place obstacle\n"
-					+ " RMB    - clear obstacles\n";
+			const string controls = "Controls:\n"
+			                        + " WASD   - pan\n"
+			                        + " QE     - rotate\n"
+			                        + " scroll - zoom\n"
+			                        + " R      - reset view\n"
+			                        + " T      - toggle vsync\n"
+			                        + " B      - toggle scene\n"
+			                        + " G      - toggle graph\n"
+			                        + " O      - spawn obstacles\n"
+			                        + " LMB    - place obstacle\n"
+			                        + " RMB    - clear obstacles\n";
 
 			batch.DrawString(Font, controls, new Vector2(10, 250), Color.LightGray);
 
@@ -226,9 +229,9 @@ namespace NeuralCreatures {
 			double total = 0;
 
 			for (int i = 0; i < GA.Generation; ++i) {
-				total += graphValue[i];
-				if (graphValue[i] > max) {
-					max = graphValue[i];
+				total += GraphValues[i];
+				if (GraphValues[i] > max) {
+					max = GraphValues[i];
 				}
 			}
 
@@ -236,64 +239,84 @@ namespace NeuralCreatures {
 
 			scale = max > 100 ? 100 / max : scale;
 
-			Shapes.DrawLine(batch, new Vector2(0, height),
-								   new Vector2(2, (float) (height - graphValue[0] * scale)),
-								   Color.Black, TxPoint, 1);
+			Shapes.DrawLine(batch,
+			                new Vector2(0, height),
+			                new Vector2(2, (float) (height - GraphValues[0] * scale)),
+			                Color.Black, TxPoint, 1);
 
 			for (int i = 1; i < GA.Generation; ++i) {
-				Shapes.DrawLine(batch, new Vector2(i * 2, (float) (height - graphValue[i - 1] * scale)),
-									   new Vector2(i * 2 + 2, (float) (height - graphValue[i] * scale)),
-									   Color.Black, TxPoint, 1);
+				Shapes.DrawLine(batch,
+				                new Vector2(i * 2, (float) (height - GraphValues[i - 1] * scale)),
+				                new Vector2(i * 2 + 2, (float) (height - GraphValues[i] * scale)),
+				                Color.Black, TxPoint, 1);
 			}
 
-			Shapes.DrawLine(batch, new Vector2(0, (float) (height - average * scale)),
-								   new Vector2(2, (float) (width - average * scale)),
-								   Color.Blue, TxPoint, 1);
+			Shapes.DrawLine(batch,
+			                new Vector2(0, (float) (height - average * scale)),
+			                new Vector2(2, (float) (width - average * scale)),
+			                Color.Blue, TxPoint, 1);
 		}
 
-		public void Dump () {
+		public void Export () {
 			try {
 				int i = 0;
-				string[] lines = new string[CreatureCount];
+				string[] weightLines = new string[CreatureCount];
+				string[] biasLines = new string[CreatureCount];
 
 				foreach (Creature c in Creatures) {
 					foreach (double weight in c.Brain.GetWeights()) {
-						lines[i] += weight + " ";
+						weightLines[i] += weight + " ";
 					}
+					foreach (double bias in c.Brain.GetBias()) {
+						biasLines[i] += bias + " ";
+					}
+
 					++i;
 				}
 
-				File.WriteAllLines("weights.txt", lines);
+				File.WriteAllLines("_w.txt", weightLines);
+				File.WriteAllLines("_b.txt", biasLines);
 
-				Console.WriteLine("Weights writing successful.");
-			} catch (Exception) {
-				return;
+				Console.WriteLine("Export successful.");
+			} catch (Exception e) {
+				Console.WriteLine(e.StackTrace);
 			}
 		}
 
-		public void Read () {
+		public void Import () {
 			try {
 				int i = 0;
-				string[] lines = File.ReadAllLines("weights.txt");
-				double[] weights = new double[CreatureCount];
+				string[] weightLines = File.ReadAllLines("_w.txt");
+				string[] biasLines = File.ReadAllLines("_b.txt");
 
 				foreach (Creature c in Creatures) {
 					c.Kill();
 					c.Reset();
 
-					string[] line = lines[i].Split();
+					double[] weights = new double[c.Brain.DendriteCount];
+					double[] biases = new double[c.Brain.NodeCount];
+
+					string[] weightLine = weightLines[i].Split();
+					string[] biasLine = biasLines[i].Split();
 
 					for (int j = 0; j < c.Brain.DendriteCount; ++j) {
-						weights[j] = double.Parse(line[j]);
+						weights[j] = double.Parse(weightLine[j]);
 					}
-					
+					for (int j = 0; j < c.Brain.NodeCount; ++j) {
+						biases[j] = double.Parse(biasLine[j]);
+					}
+
 					c.Brain.SetWeights(weights);
+					c.Brain.SetBias(biases);
+					++i;
 				}
 
-				Console.WriteLine("Weights reading successful.");
-			} catch (Exception) {
-				return;
+				Console.WriteLine("Import successful.");
+			} catch (Exception e) {
+				Console.WriteLine(e.StackTrace);
 			}
 		}
+
 	}
+
 }
