@@ -217,27 +217,25 @@ namespace NeuralCreatures {
 			batch.DrawString(Font, controls, new Vector2(10, 250), Color.LightGray);
 
 			if (DoDrawGraph) {
-				DrawGraph(batch, width, height);
+				DrawGraph(batch, height);
 			}
 
 			batch.End();
 		}
 
-		private void DrawGraph (SpriteBatch batch, int width, int height) {
+		private void DrawGraph (SpriteBatch batch, int height) {
 			double scale = 1;
 			double max = 0;
-			double total = 0;
 
 			for (int i = 0; i < GA.Generation; ++i) {
-				total += GraphValues[i];
 				if (GraphValues[i] > max) {
 					max = GraphValues[i];
 				}
 			}
 
-			double average = total / GA.Generation;
-
-			scale = max > 100 ? 100 / max : scale;
+			if (max > 100) {
+				scale = 100 / max;
+			}
 
 			Shapes.DrawLine(batch,
 			                new Vector2(0, height),
@@ -250,11 +248,6 @@ namespace NeuralCreatures {
 				                new Vector2(i * 2 + 2, (float) (height - GraphValues[i] * scale)),
 				                Color.Black, TxPoint, 1);
 			}
-
-			Shapes.DrawLine(batch,
-			                new Vector2(0, (float) (height - average * scale)),
-			                new Vector2(2, (float) (width - average * scale)),
-			                Color.Blue, TxPoint, 1);
 		}
 
 		public void Export () {
