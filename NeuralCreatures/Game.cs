@@ -50,8 +50,6 @@ namespace NeuralCreatures {
 		protected override void LoadContent () {
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
-
-			// TODO: use this.Content to load your game content here
 		}
 
 		/// <summary>
@@ -59,7 +57,6 @@ namespace NeuralCreatures {
 		/// all content.
 		/// </summary>
 		protected override void UnloadContent () {
-			// TODO: Unload any non ContentManager content here
 		}
 
 		/// <summary>

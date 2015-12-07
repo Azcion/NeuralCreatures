@@ -11,6 +11,7 @@ namespace NeuralCreatures {
 
 	internal class World {
 
+		public GeneticAlgorithm GA;
 		public Rectangle Bounds;
 		public Camera Camera;
 		public Texture2D TxCreature;
@@ -18,13 +19,13 @@ namespace NeuralCreatures {
 		public Texture2D TxFood;
 		public SpriteFont Font;
 		public BasicShapes Shapes;
+		public FrameCounter Fps;
+
 		public int Ticks;
-		public GeneticAlgorithm GA;
 		public int Deaths;
 		public int TotalDeaths;
 		public bool DoDrawScene;
 		public bool DoDrawGraph;
-		public FrameCounter Fps;
 
 		public int CreatureCount = 100;
 		public List<Creature> Creatures;
@@ -38,10 +39,7 @@ namespace NeuralCreatures {
 		private double[] graphValue;
 
 		public World (ContentManager content, Rectangle bounds, int width, int height) {
-			TxCreature = content.Load<Texture2D>("Butterfly");
-			TxPoint = content.Load<Texture2D>("Point");
-			TxFood = content.Load<Texture2D>("Food");
-			Font = content.Load<SpriteFont>("Font");
+			LoadContent(content);
 
 			Bounds = bounds;
 			Shapes = new BasicShapes();
@@ -64,6 +62,13 @@ namespace NeuralCreatures {
 			graphValue = new double[30000];
 			DoDrawScene = true;
 			DoDrawGraph = true;
+		}
+
+		public void LoadContent (ContentManager content) {
+			TxCreature = content.Load<Texture2D>("Butterfly");
+			TxPoint = content.Load<Texture2D>("Point");
+			TxFood = content.Load<Texture2D>("Food");
+			Font = content.Load<SpriteFont>("Font");
 		}
 
 		public void Update () {
