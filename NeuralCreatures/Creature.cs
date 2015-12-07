@@ -33,6 +33,8 @@ namespace NeuralCreatures {
 		}
 
 		private Vector2 origin;
+		private Vector2[,] edges;
+		private float[] edgeLengths;
 		private int stripWidth;
 
 		public Creature (Rectangle bounds, Texture2D texture, Color tint) {
@@ -40,13 +42,27 @@ namespace NeuralCreatures {
 			Bounds = bounds;
 			Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
 								   Rand.Next(Bounds.Top, Bounds.Bottom));
-			Tint = tint;
+			
+			edges = new Vector2[4, 2] {
+				{ new Vector2(bounds.Left, bounds.Top), new Vector2(bounds.Right, bounds.Top)},
+				{ new Vector2(bounds.Right, bounds.Top), new Vector2(bounds.Right, bounds.Bottom)},
+				{ new Vector2(bounds.Right, bounds.Bottom), new Vector2(bounds.Left, bounds.Bottom)},
+				{ new Vector2(bounds.Left, bounds.Bottom), new Vector2(bounds.Left, bounds.Top)}
+			};
+
+			edgeLengths = new float[4] {
+				Vector2.DistanceSquared(edges[0, 0], edges[0, 1]),
+				Vector2.DistanceSquared(edges[1, 0], edges[1, 1]),
+				Vector2.DistanceSquared(edges[2, 0], edges[2, 1]),
+				Vector2.DistanceSquared(edges[3, 0], edges[3, 1])
+			};
 
 			Angle = Rand.Next(0, 360);
 			Frame = Rand.Next(0, stripWidth);
 			Life = 100;
 			
 			Texture = texture;
+			Tint = tint;
 		}
 
 		public void Reset () {
@@ -75,19 +91,22 @@ namespace NeuralCreatures {
 			}
 
 			Vector2 origin = new Vector2(32, 32);
-			Vector2 leftSensor = ExtendedPoint(Position, Angle - 135, 100);
-			Vector2 rightSensor = ExtendedPoint(Position, Angle - 45, 100);
+
+			Vector2 sensorL = ExtendedPoint(Position, Angle - 135, 100);
+			Vector2 sensorR = ExtendedPoint(Position, Angle - 45, 100);
+
 			Food closestFoodItem = GetClosestFood(food, Position);
 			Vector2 closestFood = closestFoodItem.Position;
-			Vector2 closestObstacle = GetClosestObstacle(obstacles, Position).Position;
-			double closestFoodLeft = GetDistance(closestFood, leftSensor);
-			double closestFoodRight = GetDistance(closestFood, rightSensor);
-			double closestObstacleLeft = GetDistance(closestObstacle, leftSensor);
-			double closestObstacleRight = GetDistance(closestObstacle, rightSensor);
-			double centerDistanceFood = GetDistance(closestFood, Position);
-			double centerDistanceObstacle = GetDistance(closestObstacle, Position);
+			Vector2 closestObst = GetClosestObstacle(obstacles, Position).Position;
 
-			if (centerDistanceFood < 50) {
+			double closestFoodL = Vector2.Distance(closestFood, sensorL);
+			double closestFoodR = Vector2.Distance(closestFood, sensorR);
+			double closestObstL = Vector2.Distance(closestObst, sensorL);
+			double closestObstR = Vector2.Distance(closestObst, sensorR);
+			double centerDistFood = Vector2.Distance(closestFood, Position);
+			double centerDistObst = Vector2.Distance(closestObst, Position);
+
+			if (centerDistFood < 50) {
 				Life += 30;
 				Fitness += 10;
 				closestFoodItem.Position = new Vector2(Rand.Next(Bounds.Left, Bounds.Right),
@@ -99,8 +118,8 @@ namespace NeuralCreatures {
 			// {food left, food right, obstacle left, obstacle right}
 			double[] input = new double[4];
 
-			if (centerDistanceFood < centerDistanceObstacle) {
-				if (closestFoodLeft > closestFoodRight) {
+			if (centerDistFood < centerDistObst) {
+				if (closestFoodL > closestFoodR) {
 					input[0] = 1;
 					input[1] = -1;
 				} else {
@@ -108,7 +127,7 @@ namespace NeuralCreatures {
 					input[1] = 1;
 				}
 			} else {
-				if (closestObstacleLeft > closestObstacleRight) {
+				if (closestObstL > closestObstR) {
 					input[2] = 1;
 					input[3] = -1;
 				} else {
@@ -138,7 +157,7 @@ namespace NeuralCreatures {
 			double closestObstacleDist = 30000;
 
 			foreach (Obstacle o in obstacles) {
-				double dist = GetDistance(o.Position - origin, Position - origin);
+				double dist = Vector2.Distance(o.Position - origin, Position - origin);
 				if (dist < closestObstacleDist) {
 					closestObstacleDist = dist;
 				}
@@ -179,7 +198,7 @@ namespace NeuralCreatures {
 			double closest = 30000;
 
 			foreach (Food f in food) {
-				double dist = GetDistance(start, f.Position);
+				double dist = Vector2.Distance(start, f.Position);
 				if (dist < closest) {
 					closest = dist;
 					closestFood = f;
@@ -190,28 +209,52 @@ namespace NeuralCreatures {
 		}
 
 		private Obstacle GetClosestObstacle (List<Obstacle> obstacles, Vector2 start) {
-			Obstacle closestObstacle = new Obstacle(Bounds);
+			Obstacle closestObst = new Obstacle(Bounds);
+			Obstacle closestEdge = GetClosestEdge(start);
 			double closest = 30000;
+			double distEdge = Vector2.Distance(start, closestEdge.Position);
 
 			foreach (Obstacle o in obstacles) {
-				double dist = GetDistance(start, o.Position);
+				double dist = Vector2.Distance(start, o.Position);
 				if (dist < closest) {
 					closest = dist;
-					closestObstacle = o;
+					closestObst = o;
 				}
 			}
 
-			return closestObstacle;
+			if (distEdge < closest) {
+				closestObst = closestEdge;
+			}
+
+			return closestObst;
 		}
 
-		private double GetDistance (Vector2 start, Vector2 end) {
-			Vector2 dist = start - end;
+		private Obstacle GetClosestEdge (Vector2 start) {
+			Obstacle edgeObst = new Obstacle(Bounds);
+			float closest = 30000;
 
-			return Math.Sqrt(dist.X * dist.X + dist.Y * dist.Y);
+			for (int i = 0; i < 4; ++i) {
+				Vector2 projection = ProjectionOnEdge(start, edges[i, 0], edges[i, 1], edgeLengths[i]);
+				float dist = Vector2.Distance(start, projection);
+				if (dist < closest) {
+					closest = dist;
+					edgeObst.Position = projection;
+				}
+			}
+
+			return edgeObst;
 		}
 
-		public Texture2D GetTexture () {
-			return Texture;
+		private Vector2 ProjectionOnEdge (Vector2 start, Vector2 cornerA, Vector2 cornerB, float distanceSquared) {
+			float t = Vector2.Dot(start - cornerA, cornerB - cornerA) / distanceSquared;
+
+			if (t < 0) {
+				return cornerA;
+			} else if (t > 1) {
+				return cornerB;
+			}
+
+			return cornerA + t * (cornerB - cornerA);
 		}
 
 		public void Draw (SpriteBatch batch, Color color, int ticks) {

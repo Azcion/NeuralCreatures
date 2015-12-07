@@ -115,7 +115,7 @@ namespace NeuralCreatures {
 					childWeights[j] = parentBWeights[j];
 				}
 
-				Creature child = new Creature(bounds, parentA.GetTexture(), parentA.Tint);
+				Creature child = new Creature(bounds, parentA.Texture, parentA.Tint);
 				child.Position = new Vector2(parentA.Position.X - 10, parentA.Position.Y - 10);
 				child.Brain.SetWeights(childWeights);
 				NextGeneration.Add(child);
